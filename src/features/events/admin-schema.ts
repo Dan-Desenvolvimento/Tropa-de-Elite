@@ -5,9 +5,12 @@ import { isSafeHttpsUrl } from "@/lib/urls";
 const optionalHttpsUrl = z
   .string()
   .trim()
-  .default("")
-  .transform((value) => (value === "" ? null : value))
-  .refine((value) => value === null || isSafeHttpsUrl(value), "Use uma URL HTTPS válida.");
+  .nullish()
+  .transform((value) => (value ? value : null))
+  .refine(
+    (value) => value === null || isSafeHttpsUrl(value),
+    "Use uma URL HTTPS válida.",
+  );
 
 export const eventCustomFieldSchema = z
   .object({
