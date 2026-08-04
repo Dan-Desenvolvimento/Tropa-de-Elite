@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isSafeHttpsUrl } from "@/lib/urls";
+import { isSafeHttpsUrl, isSafeWhatsAppUrl } from "@/lib/urls";
 
 const optionalHttpsUrl = z
   .string()
@@ -10,6 +10,16 @@ const optionalHttpsUrl = z
   .refine(
     (value) => value === null || isSafeHttpsUrl(value),
     "Use uma URL HTTPS válida.",
+  );
+
+const optionalWhatsAppUrl = z
+  .string()
+  .trim()
+  .nullish()
+  .transform((value) => (value ? value : null))
+  .refine(
+    (value) => value === null || isSafeWhatsAppUrl(value),
+    "Use um link válido do WhatsApp iniciado por https://chat.whatsapp.com/ ou https://wa.me/.",
   );
 
 export const eventCustomFieldSchema = z
@@ -46,7 +56,7 @@ export const adminEventSchema = z
     capacity: z.number().int().positive().nullable(),
     waitlistEnabled: z.boolean(),
     showRemainingSlots: z.boolean(),
-    whatsappGroupUrl: optionalHttpsUrl,
+    whatsappGroupUrl: optionalWhatsAppUrl,
     registrationStatus: z.enum(["draft", "open", "closed", "sold_out", "finished", "cancelled"]),
     registrationOpenAt: z.string().datetime().nullable(),
     registrationCloseAt: z.string().datetime().nullable(),

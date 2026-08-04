@@ -62,6 +62,22 @@ export async function POST(
 
     const { slug } = await params;
     const supabase = createAdminClient();
+
+    if (!process.env.CHECKIN_RATE_LIMIT_SECRET) {
+      console.error("Public registration configuration is incomplete", {
+        missingVariable: "CHECKIN_RATE_LIMIT_SECRET",
+      });
+      return NextResponse.json<ApiResult<never>>(
+        {
+          success: false,
+          code: "SERVER_CONFIGURATION_ERROR",
+          message:
+            "O sistema de inscrições está temporariamente indisponível. A configuração do servidor precisa ser concluída.",
+        },
+        { status: 503 },
+      );
+    }
+
     const ipHash = hashRequestIdentifier(getRequestIp(request));
     const { data: rateLimit, error: rateLimitError } = await supabase.rpc("consume_rate_limit", {
       rate_scope: "public_registration",
@@ -70,7 +86,24 @@ export async function POST(
       rate_window_seconds: 900,
     });
 
-    if (rateLimitError) throw rateLimitError;
+    if (rateLimitError) {
+      console.error("Public registration rate limit failed", {
+        code: rateLimitError.code,
+        message: rateLimitError.message,
+        details: rateLimitError.details,
+        hint: rateLimitError.hint,
+      });
+      return NextResponse.json<ApiResult<never>>(
+        {
+          success: false,
+          code: "RATE_LIMIT_CONFIGURATION_ERROR",
+          message:
+            "O sistema de inscrições ainda não está totalmente configurado. Verifique as migrations do Supabase.",
+        },
+        { status: 503 },
+      );
+    }
+
     const rateResult = rateLimit as { allowed?: boolean; retry_after_seconds?: number } | null;
     if (!rateResult?.allowed) {
       return NextResponse.json<ApiResult<never>>(
@@ -163,8 +196,22 @@ export async function POST(
       { status: 201 },
     );
   } catch (error) {
+    const errorRecord =
+      error && typeof error === "object"
+        ? (error as {
+            code?: unknown;
+            message?: unknown;
+            details?: unknown;
+            hint?: unknown;
+          })
+        : null;
+
     console.error("Public registration failed", {
       name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : errorRecord?.message,
+      code: errorRecord?.code,
+      details: errorRecord?.details,
+      hint: errorRecord?.hint,
     });
     return NextResponse.json<ApiResult<never>>(
       {
