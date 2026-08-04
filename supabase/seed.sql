@@ -1,0 +1,2 @@
+-- O projeto não cria eventos ou administradores automaticamente.
+-- Use o painel após criar o primeiro usuário administrativo conforme o README.
