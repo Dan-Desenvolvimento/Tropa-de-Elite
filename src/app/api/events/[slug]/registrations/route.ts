@@ -28,10 +28,13 @@ type RegistrationRpcResult = {
 
 const publicMessages: Record<string, string> = {
   DUPLICATE_REGISTRATION:
-    "Já existe uma inscrição vinculada a esses dados. Você pode solicitar o reenvio do ingresso.",
+    "JÃ¡ existe uma inscriÃ§Ã£o vinculada a esses dados. VocÃª pode solicitar o reenvio do ingresso.",
   EVENT_SOLD_OUT: "As vagas deste evento foram preenchidas.",
-  REGISTRATION_CLOSED: "As inscrições para este evento não estão abertas.",
-  PRIVACY_CONSENT_REQUIRED: "É necessário aceitar a Política de Privacidade.",
+  REGISTRATION_CLOSED: "As inscriÃ§Ãµes para este evento nÃ£o estÃ£o abertas.",
+  PRIVACY_CONSENT_REQUIRED:
+    "Ã‰ necessÃ¡rio aceitar a PolÃ­tica de Privacidade.",
+  COMPANY_REQUIRED: "Informe o nome da empresa.",
+  INVALID_JOB_ROLE: "Informe um cargo ou funÃ§Ã£o vÃ¡lido.",
 };
 
 export async function POST(
@@ -47,7 +50,9 @@ export async function POST(
         {
           success: false,
           code: "VALIDATION_ERROR",
-          message: "Revise os dados informados e tente novamente.",
+          message:
+            parsed.error.issues[0]?.message ??
+            "Revise os dados informados e tente novamente.",
         },
         { status: 400 },
       );
@@ -55,7 +60,11 @@ export async function POST(
 
     if (parsed.data.website) {
       return NextResponse.json<ApiResult<never>>(
-        { success: false, code: "INVALID_REQUEST", message: "Não foi possível processar a solicitação." },
+        {
+          success: false,
+          code: "INVALID_REQUEST",
+          message: "NÃ£o foi possÃ­vel processar a solicitaÃ§Ã£o.",
+        },
         { status: 400 },
       );
     }
@@ -72,19 +81,22 @@ export async function POST(
           success: false,
           code: "SERVER_CONFIGURATION_ERROR",
           message:
-            "O sistema de inscrições está temporariamente indisponível. A configuração do servidor precisa ser concluída.",
+            "O sistema de inscriÃ§Ãµes estÃ¡ temporariamente indisponÃ­vel. A configuraÃ§Ã£o do servidor precisa ser concluÃ­da.",
         },
         { status: 503 },
       );
     }
 
     const ipHash = hashRequestIdentifier(getRequestIp(request));
-    const { data: rateLimit, error: rateLimitError } = await supabase.rpc("consume_rate_limit", {
-      rate_scope: "public_registration",
-      rate_key_hash: ipHash,
-      rate_max_attempts: 5,
-      rate_window_seconds: 900,
-    });
+    const { data: rateLimit, error: rateLimitError } = await supabase.rpc(
+      "consume_rate_limit",
+      {
+        rate_scope: "public_registration",
+        rate_key_hash: ipHash,
+        rate_max_attempts: 5,
+        rate_window_seconds: 900,
+      },
+    );
 
     if (rateLimitError) {
       console.error("Public registration rate limit failed", {
@@ -98,23 +110,30 @@ export async function POST(
           success: false,
           code: "RATE_LIMIT_CONFIGURATION_ERROR",
           message:
-            "O sistema de inscrições ainda não está totalmente configurado. Verifique as migrations do Supabase.",
+            "O sistema de inscriÃ§Ãµes ainda nÃ£o estÃ¡ totalmente configurado. Verifique as migrations do Supabase.",
         },
         { status: 503 },
       );
     }
 
-    const rateResult = rateLimit as { allowed?: boolean; retry_after_seconds?: number } | null;
+    const rateResult = rateLimit as {
+      allowed?: boolean;
+      retry_after_seconds?: number;
+    } | null;
+
     if (!rateResult?.allowed) {
       return NextResponse.json<ApiResult<never>>(
         {
           success: false,
           code: "RATE_LIMITED",
-          message: "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.",
+          message:
+            "Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.",
         },
         {
           status: 429,
-          headers: { "Retry-After": String(rateResult?.retry_after_seconds ?? 900) },
+          headers: {
+            "Retry-After": String(rateResult?.retry_after_seconds ?? 900),
+          },
         },
       );
     }
@@ -126,36 +145,63 @@ export async function POST(
       .maybeSingle<{ id: string; custom_fields: unknown }>();
 
     if (eventError) throw eventError;
+
     if (!event) {
       return NextResponse.json<ApiResult<never>>(
-        { success: false, code: "EVENT_NOT_FOUND", message: "Evento não localizado." },
+        {
+          success: false,
+          code: "EVENT_NOT_FOUND",
+          message: "Evento nÃ£o localizado.",
+        },
         { status: 404 },
       );
     }
-    const customFieldsResult = eventCustomFieldSchema.array().safeParse(event.custom_fields);
-    const customFields = customFieldsResult.success ? customFieldsResult.data : [];
+
+    const customFieldsResult = eventCustomFieldSchema
+      .array()
+      .safeParse(event.custom_fields);
+    const customFields = customFieldsResult.success
+      ? customFieldsResult.data
+      : [];
+
     const validated = createRegistrationSchema(customFields).safeParse(body);
+
     if (!validated.success) {
       return NextResponse.json<ApiResult<never>>(
         {
           success: false,
           code: "VALIDATION_ERROR",
-          message: validated.error.issues[0]?.message ?? "Revise os dados informados e tente novamente.",
+          message:
+            validated.error.issues[0]?.message ??
+            "Revise os dados informados e tente novamente.",
         },
         { status: 400 },
       );
     }
 
-    const { data, error } = await supabase.rpc("create_event_registration", {
-      target_event_id: event.id,
-      participant_name: validated.data.fullName,
-      participant_email: validated.data.email,
-      participant_phone: validated.data.phone,
-      participant_city: validated.data.city,
-      answers: pickCustomAnswers(customFields, validated.data.customAnswers),
-      accepted_privacy: validated.data.privacyConsent,
-      accepted_communications: validated.data.communicationsConsent,
-    });
+    const { data, error } = await supabase.rpc(
+      "create_event_registration",
+      {
+        target_event_id: event.id,
+        participant_name: validated.data.fullName,
+        participant_email: validated.data.email,
+        participant_phone: validated.data.phone,
+        participant_city: validated.data.city,
+        participant_company_name: validated.data.companyName,
+        participant_job_role: validated.data.jobRole,
+        participant_job_role_other:
+          validated.data.jobRole === "other"
+            ? validated.data.jobRoleOther
+            : null,
+        answers: pickCustomAnswers(
+          customFields,
+          validated.data.customAnswers,
+        ),
+        accepted_privacy: validated.data.privacyConsent,
+        accepted_communications:
+          validated.data.communicationsConsent,
+      },
+    );
 
     if (error) throw error;
     const result = data as RegistrationRpcResult;
@@ -172,9 +218,14 @@ export async function POST(
         {
           success: false,
           code,
-          message: publicMessages[code] ?? "Não foi possível concluir a inscrição.",
+          message:
+            publicMessages[code] ??
+            "NÃ£o foi possÃ­vel concluir a inscriÃ§Ã£o.",
         },
-        { status: code === "DUPLICATE_REGISTRATION" ? 409 : 400 },
+        {
+          status:
+            code === "DUPLICATE_REGISTRATION" ? 409 : 400,
+        },
       );
     }
 
@@ -208,16 +259,19 @@ export async function POST(
 
     console.error("Public registration failed", {
       name: error instanceof Error ? error.name : "UnknownError",
-      message: error instanceof Error ? error.message : errorRecord?.message,
+      message:
+        error instanceof Error ? error.message : errorRecord?.message,
       code: errorRecord?.code,
       details: errorRecord?.details,
       hint: errorRecord?.hint,
     });
+
     return NextResponse.json<ApiResult<never>>(
       {
         success: false,
         code: "INTERNAL_ERROR",
-        message: "Não foi possível concluir sua inscrição agora. Tente novamente.",
+        message:
+          "NÃ£o foi possÃ­vel concluir sua inscriÃ§Ã£o agora. Tente novamente.",
       },
       { status: 500 },
     );

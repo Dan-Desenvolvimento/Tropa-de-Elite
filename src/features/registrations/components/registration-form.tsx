@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import type { EventCustomField } from "@/features/events/types";
+import { JOB_ROLE_OPTIONS } from "@/features/registrations/job-roles";
 import {
   createRegistrationSchema,
   formatBrazilianPhone,
@@ -41,6 +42,7 @@ export function RegistrationForm({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegistrationInput, unknown, ValidatedRegistration>({
     resolver: zodResolver(createRegistrationSchema(customFields)),
@@ -49,6 +51,8 @@ export function RegistrationForm({
       email: "",
       phone: "",
       city: "",
+      companyName: "",
+      jobRoleOther: "",
       privacyConsent: false,
       communicationsConsent: false,
       customAnswers: {},
@@ -56,16 +60,21 @@ export function RegistrationForm({
     },
   });
 
+  const selectedJobRole = watch("jobRole");
+
   async function onSubmit(input: ValidatedRegistration) {
     setServerError(null);
     setServerErrorCode(null);
 
     try {
-      const response = await fetch(`/api/events/${encodeURIComponent(eventSlug)}/registrations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
+      const response = await fetch(
+        `/api/events/${encodeURIComponent(eventSlug)}/registrations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        },
+      );
       const result = (await response.json()) as RegistrationResponse;
 
       if (!result.success) {
@@ -80,26 +89,38 @@ export function RegistrationForm({
       });
       router.push(`/eventos/${eventSlug}/confirmacao?${query.toString()}`);
     } catch {
-      setServerError("Não foi possível concluir sua inscrição agora. Tente novamente.");
+      setServerError(
+        "NÃ£o foi possÃ­vel concluir sua inscriÃ§Ã£o agora. Tente novamente.",
+      );
       setServerErrorCode("NETWORK_ERROR");
     }
   }
 
   const inputClass =
     "mt-2 h-12 w-full rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500/70 focus:ring-2 focus:ring-red-500/15";
+  const textareaClass =
+    "mt-2 min-h-24 w-full resize-y rounded-xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500/70 focus:ring-2 focus:ring-red-500/15";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-      <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-        <label htmlFor="website">Não preencha este campo</label>
-        <input id="website" tabIndex={-1} autoComplete="off" {...register("website")} />
+      <div
+        className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden"
+        aria-hidden="true"
+      >
+        <label htmlFor="website">NÃ£o preencha este campo</label>
+        <input
+          id="website"
+          tabIndex={-1}
+          autoComplete="off"
+          {...register("website")}
+        />
       </div>
 
       <Field label="Nome completo" error={errors.fullName?.message}>
         <input
           className={inputClass}
           autoComplete="name"
-          placeholder="Como está no seu documento"
+          placeholder="Como estÃ¡ no seu documento"
           {...register("fullName")}
         />
       </Field>
@@ -122,7 +143,8 @@ export function RegistrationForm({
             inputMode="tel"
             placeholder="(77) 99999-9999"
             {...register("phone", {
-              onChange: (event) => setValue("phone", formatBrazilianPhone(event.target.value)),
+              onChange: (event) =>
+                setValue("phone", formatBrazilianPhone(event.target.value)),
             })}
           />
         </Field>
@@ -137,19 +159,86 @@ export function RegistrationForm({
         />
       </Field>
 
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label="Empresa" error={errors.companyName?.message}>
+          <input
+            className={inputClass}
+            autoComplete="organization"
+            placeholder="Nome da empresa"
+            maxLength={160}
+            {...register("companyName")}
+          />
+        </Field>
+
+        <Field label="Cargo ou funÃ§Ã£o" error={errors.jobRole?.message}>
+          <select
+            className={inputClass}
+            defaultValue=""
+            autoComplete="organization-title"
+            {...register("jobRole")}
+          >
+            <option value="" disabled>
+              Selecione
+            </option>
+            {JOB_ROLE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      {selectedJobRole === "other" ? (
+        <Field
+          label="Qual Ã© a sua funÃ§Ã£o?"
+          error={errors.jobRoleOther?.message}
+        >
+          <textarea
+            className={textareaClass}
+            rows={3}
+            maxLength={160}
+            placeholder="Digite seu cargo ou funÃ§Ã£o"
+            {...register("jobRoleOther")}
+          />
+        </Field>
+      ) : null}
+
       {customFields.map((field) => {
         const fieldError = errors.customAnswers?.[field.id]?.message;
         return (
-          <Field key={field.id} label={`${field.label}${field.required ? " *" : ""}`} error={typeof fieldError === "string" ? fieldError : undefined}>
+          <Field
+            key={field.id}
+            label={`${field.label}${field.required ? " *" : ""}`}
+            error={typeof fieldError === "string" ? fieldError : undefined}
+          >
             {field.type === "select" ? (
-              <select className={inputClass} defaultValue="" {...register(`customAnswers.${field.id}`)}>
-                <option value="" disabled>Selecione</option>
-                {field.options.map((option) => <option key={option} value={option}>{option}</option>)}
+              <select
+                className={inputClass}
+                defaultValue=""
+                {...register(`customAnswers.${field.id}`)}
+              >
+                <option value="" disabled>
+                  Selecione
+                </option>
+                {field.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
             ) : field.type === "checkbox" ? (
-              <input type="checkbox" className="mt-3 size-5 accent-red-600" {...register(`customAnswers.${field.id}`)} />
+              <input
+                type="checkbox"
+                className="mt-3 size-5 accent-red-600"
+                {...register(`customAnswers.${field.id}`)}
+              />
             ) : (
-              <input className={inputClass} maxLength={500} {...register(`customAnswers.${field.id}`)} />
+              <input
+                className={inputClass}
+                maxLength={500}
+                {...register(`customAnswers.${field.id}`)}
+              />
             )}
           </Field>
         );
@@ -157,7 +246,11 @@ export function RegistrationForm({
 
       <div className="space-y-3 rounded-xl border border-white/8 bg-black/25 p-4 text-sm text-zinc-400">
         <label className="flex cursor-pointer items-start gap-3">
-          <input type="checkbox" className="mt-1 size-4 accent-red-600" {...register("privacyConsent")} />
+          <input
+            type="checkbox"
+            className="mt-1 size-4 accent-red-600"
+            {...register("privacyConsent")}
+          />
           <span>
             Li e aceito a{" "}
             {privacyPolicyUrl ? (
@@ -167,32 +260,41 @@ export function RegistrationForm({
                 rel="noopener noreferrer"
                 className="text-red-400 underline underline-offset-2"
               >
-                Política de Privacidade
+                PolÃ­tica de Privacidade e ProteÃ§Ã£o de Dados (LGPD)
               </a>
             ) : (
-              "Política de Privacidade"
+              "PolÃ­tica de Privacidade e ProteÃ§Ã£o de Dados (LGPD)"
             )}
             .
           </span>
         </label>
         {errors.privacyConsent?.message ? (
-          <p className="text-xs text-red-400">{errors.privacyConsent.message}</p>
+          <p className="text-xs text-red-400">
+            {errors.privacyConsent.message}
+          </p>
         ) : null}
+
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"
             className="mt-1 size-4 accent-red-600"
             {...register("communicationsConsent")}
           />
-          <span>Aceito receber comunicações relacionadas a este evento.</span>
+          <span>Aceito receber comunicaÃ§Ãµes relacionadas a este evento.</span>
         </label>
       </div>
 
       {serverError ? (
-        <div role="alert" className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-200">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-200"
+        >
           <p>{serverError}</p>
           {serverErrorCode === "DUPLICATE_REGISTRATION" ? (
-            <a href={`/eventos/${encodeURIComponent(eventSlug)}/reenviar-ingresso`} className="mt-3 inline-flex font-semibold text-white underline underline-offset-4">
+            <a
+              href={`/eventos/${encodeURIComponent(eventSlug)}/reenviar-ingresso`}
+              className="mt-3 inline-flex font-semibold text-white underline underline-offset-4"
+            >
               Solicitar reenvio do ingresso
             </a>
           ) : null}
@@ -206,10 +308,11 @@ export function RegistrationForm({
       >
         {isSubmitting ? (
           <>
-            <LoaderCircle className="size-5 animate-spin" /> Processando inscrição
+            <LoaderCircle className="size-5 animate-spin" /> Processando
+            inscriÃ§Ã£o
           </>
         ) : disabled ? (
-          "Inscrições indisponíveis"
+          "InscriÃ§Ãµes indisponÃ­veis"
         ) : (
           <>
             Garantir minha vaga <ArrowRight className="size-5" />
@@ -218,7 +321,8 @@ export function RegistrationForm({
       </button>
 
       <p className="flex items-center justify-center gap-2 text-center text-xs text-zinc-500">
-        <CheckCircle2 className="size-4 text-emerald-500" /> Seus dados são usados somente para a organização do evento.
+        <CheckCircle2 className="size-4 text-emerald-500" /> Seus dados sÃ£o
+        usados somente para a organizaÃ§Ã£o do evento.
       </p>
     </form>
   );
@@ -237,7 +341,9 @@ function Field({
     <label className="block text-sm font-medium text-zinc-300">
       {label}
       {children}
-      {error ? <span className="mt-1.5 block text-xs text-red-400">{error}</span> : null}
+      {error ? (
+        <span className="mt-1.5 block text-xs text-red-400">{error}</span>
+      ) : null}
     </label>
   );
 }
