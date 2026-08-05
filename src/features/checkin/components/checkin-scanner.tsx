@@ -1,7 +1,10 @@
 "use client";
 
-import { Camera, CheckCircle2, Flashlight, Keyboard, LoaderCircle, Search, Wifi, WifiOff, XCircle } from "lucide-react";
+import { Building2, Camera, CheckCircle2, Flashlight, Keyboard, LoaderCircle, Search, Wifi, WifiOff, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { isPotentialBusinessOwner } from "@/features/checkin/strategic-profile";
+import { formatJobRole } from "@/features/registrations/job-roles";
 
 type ScannerControls = { stop: () => void; switchTorch?: (on: boolean) => Promise<void> };
 type LookupResult = {
@@ -13,6 +16,10 @@ type LookupResult = {
   registration_status?: string;
   checked_in_at?: string | null;
   checked_in_by_name?: string | null;
+  company_name?: string | null;
+  job_role?: string | null;
+  job_role_other?: string | null;
+  potential_business_owner?: boolean;
 };
 type SearchResult = {
   registration_id: string;
@@ -178,8 +185,14 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
     try { await controlsRef.current.switchTorch(next); setTorchOn(next); } catch { setTorchOn(false); }
   }
 
+  const strategicProfile =
+    result?.potential_business_owner ??
+    isPotentialBusinessOwner(result?.job_role);
   const visual = result ? outcomeCopy[result.code] ?? { title: "Não foi possível validar", tone: "red" as const } : null;
   const toneClass = visual?.tone === "green" ? "border-emerald-500/30 bg-emerald-500/10" : visual?.tone === "yellow" ? "border-amber-500/30 bg-amber-500/10" : "border-red-500/30 bg-red-500/10";
+  const modalToneClass = strategicProfile
+    ? "border-amber-400/60 bg-[linear-gradient(145deg,rgba(120,83,15,.32),rgba(24,24,27,.97))] shadow-[0_0_55px_rgba(251,191,36,.16)]"
+    : toneClass;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
@@ -231,11 +244,49 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
 
       {pending || result ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-5 backdrop-blur-sm">
-          <div className={`w-full max-w-md rounded-[2rem] border p-7 text-center ${pending ? "border-white/10 bg-zinc-950" : toneClass}`}>
-        {pending ? <><LoaderCircle className="mx-auto size-12 animate-spin text-red-500" /><h2 className="mt-5 text-2xl font-semibold text-white">Validando ingresso</h2></> : <>{visual?.tone === "green" ? <CheckCircle2 className="mx-auto size-14 text-emerald-400" /> : <XCircle className={`mx-auto size-14 ${visual?.tone === "yellow" ? "text-amber-400" : "text-red-400"}`} />}<h2 className="mt-5 text-2xl font-semibold text-white">{visual?.title}</h2>{result?.full_name ? <p className="mt-3 text-lg text-zinc-200">{result.full_name}</p> : null}{result?.ticket_code ? <p className="mt-1 font-mono text-sm text-zinc-500">{result.ticket_code}</p> : null}{result?.checked_in_at ? <p className="mt-3 text-sm text-zinc-400">Primeira entrada: {new Date(result.checked_in_at).toLocaleString("pt-BR")}{result.checked_in_by_name ? ` · ${result.checked_in_by_name}` : ""}</p> : null}{result?.code === "TICKET_FOUND" ? <button onClick={() => void confirmCheckin()} disabled={!online} className="mt-7 min-h-14 w-full rounded-xl bg-emerald-600 px-6 text-sm font-bold uppercase tracking-wide text-white disabled:bg-zinc-800">Confirmar entrada</button> : null}{result?.code === "WAITLIST_REGISTRATION" && canOverrideWaitlist ? <button onClick={() => void confirmCheckin(true)} disabled={!online} className="mt-7 min-h-14 w-full rounded-xl bg-amber-600 px-6 text-sm font-bold uppercase tracking-wide text-white disabled:bg-zinc-800">Promover e confirmar entrada</button> : null}<button onClick={closeResult} className="mt-3 min-h-12 w-full rounded-xl border border-white/10 px-6 text-sm font-semibold text-white">{result?.code === "CHECKIN_SUCCESS" ? "Ler próximo" : "Fechar"}</button></>}
+          <div className={`w-full max-w-md rounded-[2rem] border p-7 text-center ${pending ? "border-white/10 bg-zinc-950" : modalToneClass}`}>
+        {pending ? <><LoaderCircle className="mx-auto size-12 animate-spin text-red-500" /><h2 className="mt-5 text-2xl font-semibold text-white">Validando ingresso</h2></> : <>{visual?.tone === "green" ? <CheckCircle2 className="mx-auto size-14 text-emerald-400" /> : <XCircle className={`mx-auto size-14 ${visual?.tone === "yellow" ? "text-amber-400" : "text-red-400"}`} />}<h2 className="mt-5 text-2xl font-semibold text-white">{visual?.title}</h2>{strategicProfile ? (
+      <StrategicProfileAlert
+        companyName={result?.company_name}
+        jobRole={result?.job_role}
+        jobRoleOther={result?.job_role_other}
+      />
+    ) : null}{result?.full_name ? <p className="mt-3 text-lg text-zinc-200">{result.full_name}</p> : null}{result?.ticket_code ? <p className="mt-1 font-mono text-sm text-zinc-500">{result.ticket_code}</p> : null}{result?.checked_in_at ? <p className="mt-3 text-sm text-zinc-400">Primeira entrada: {new Date(result.checked_in_at).toLocaleString("pt-BR")}{result.checked_in_by_name ? ` · ${result.checked_in_by_name}` : ""}</p> : null}{result?.code === "TICKET_FOUND" ? <button onClick={() => void confirmCheckin()} disabled={!online} className="mt-7 min-h-14 w-full rounded-xl bg-emerald-600 px-6 text-sm font-bold uppercase tracking-wide text-white disabled:bg-zinc-800">Confirmar entrada</button> : null}{result?.code === "WAITLIST_REGISTRATION" && canOverrideWaitlist ? <button onClick={() => void confirmCheckin(true)} disabled={!online} className="mt-7 min-h-14 w-full rounded-xl bg-amber-600 px-6 text-sm font-bold uppercase tracking-wide text-white disabled:bg-zinc-800">Promover e confirmar entrada</button> : null}<button onClick={closeResult} className="mt-3 min-h-12 w-full rounded-xl border border-white/10 px-6 text-sm font-semibold text-white">{result?.code === "CHECKIN_SUCCESS" ? "Ler próximo" : "Fechar"}</button></>}
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function StrategicProfileAlert({
+  companyName,
+  jobRole,
+  jobRoleOther,
+}: {
+  companyName?: string | null;
+  jobRole?: string | null;
+  jobRoleOther?: string | null;
+}) {
+  return (
+    <div
+      role="status"
+      aria-label="Sinal interno da recepção"
+      className="mt-5 rounded-2xl border border-amber-300/45 bg-amber-300/10 p-4 text-left"
+    >
+      <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-amber-300">
+        <Building2 className="size-4 animate-pulse" />
+        Sinal interno E1
+      </div>
+
+      <p className="mt-2 text-sm font-semibold text-white">
+        Perfil empresarial identificado
+      </p>
+
+      <p className="mt-1 text-xs leading-5 text-amber-100/70">
+        {companyName?.trim() || "Empresa não informada"} ·{" "}
+        {formatJobRole(jobRole, jobRoleOther)}
+      </p>
     </div>
   );
 }

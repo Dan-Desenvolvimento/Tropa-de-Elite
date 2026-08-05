@@ -119,7 +119,7 @@ export default async function RegistrationsPage({
             <input
               name="q"
               defaultValue={q}
-              placeholder="Nome, empresa, e-mail, telefone ou cÃ³digo"
+              placeholder="Nome, empresa, e-mail, telefone ou código"
               className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-3 text-sm text-white outline-none focus:border-red-500/60"
             />
           </div>
