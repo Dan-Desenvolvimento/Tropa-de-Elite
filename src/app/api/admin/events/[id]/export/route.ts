@@ -78,7 +78,7 @@ export async function GET(
     "Status",
     "Data da inscrição",
     "Presença",
-    "HorÃ¡rio do check-in",
+    "Horário do check-in",
     "Respostas personalizadas",
   ];
 
@@ -91,7 +91,7 @@ export async function GET(
     formatJobRole(row.job_role, row.job_role_other),
     row.status,
     formatDateTime(row.registered_at, event.timezone),
-    row.checked_in_at ? "Sim" : "NÃ£o",
+    row.checked_in_at ? "Sim" : "Não",
     row.checked_in_at
       ? formatDateTime(row.checked_in_at, event.timezone)
       : "",

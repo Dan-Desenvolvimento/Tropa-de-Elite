@@ -31,7 +31,7 @@ export function formatJobRole(
   role: string | null | undefined,
   otherRole?: string | null,
 ) {
-  if (!role) return "NÃ£o informado";
+  if (!role) return "Não informado";
 
   if (role === "other") {
     return otherRole?.trim() || "Outro";

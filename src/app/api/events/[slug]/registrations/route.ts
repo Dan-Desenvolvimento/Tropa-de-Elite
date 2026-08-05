@@ -110,7 +110,7 @@ export async function POST(
           success: false,
           code: "RATE_LIMIT_CONFIGURATION_ERROR",
           message:
-            "O sistema de inscrições ainda nÃ£o estÃ¡ totalmente configurado. Verifique as migrations do Supabase.",
+            "O sistema de inscrições ainda não está totalmente configurado. Verifique as migrations do Supabase.",
         },
         { status: 503 },
       );
@@ -151,7 +151,7 @@ export async function POST(
         {
           success: false,
           code: "EVENT_NOT_FOUND",
-          message: "Evento nÃ£o localizado.",
+          message: "Evento não localizado.",
         },
         { status: 404 },
       );
@@ -220,7 +220,7 @@ export async function POST(
           code,
           message:
             publicMessages[code] ??
-            "NÃ£o foi possÃ­vel concluir a inscrição.",
+            "Não foi possÃ­vel concluir a inscrição.",
         },
         {
           status:
@@ -271,7 +271,7 @@ export async function POST(
         success: false,
         code: "INTERNAL_ERROR",
         message:
-          "NÃ£o foi possÃ­vel concluir sua inscrição agora. Tente novamente.",
+          "Não foi possÃ­vel concluir sua inscrição agora. Tente novamente.",
       },
       { status: 500 },
     );

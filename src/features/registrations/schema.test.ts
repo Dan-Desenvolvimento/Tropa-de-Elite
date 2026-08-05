@@ -39,7 +39,7 @@ const validRegistration = {
 };
 
 describe("registrationSchema", () => {
-  it("normaliza uma inscrição vÃ¡lida", () => {
+  it("normaliza uma inscrição válida", () => {
     const result = registrationSchema.parse(validRegistration);
     expect(result.email).toBe("maria@exemplo.com");
     expect(result.phone).toBe("77999998888");
@@ -47,7 +47,7 @@ describe("registrationSchema", () => {
     expect(result.jobRole).toBe("director");
   });
 
-  it("rejeita e-mail invÃ¡lido", () => {
+  it("rejeita e-mail inválido", () => {
     const result = registrationSchema.safeParse({
       ...validRegistration,
       email: "invalido",
@@ -55,7 +55,7 @@ describe("registrationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejeita telefone invÃ¡lido", () => {
+  it("rejeita telefone inválido", () => {
     const result = registrationSchema.safeParse({
       ...validRegistration,
       phone: "123",
@@ -137,7 +137,7 @@ describe("registrationSchema", () => {
 });
 
 describe("formatBrazilianPhone", () => {
-  it("aplica mÃ¡scara de celular", () => {
+  it("aplica máscara de celular", () => {
     expect(formatBrazilianPhone("77999998888")).toBe("(77) 99999-8888");
   });
 });

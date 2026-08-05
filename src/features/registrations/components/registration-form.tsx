@@ -107,7 +107,7 @@ export function RegistrationForm({
         className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden"
         aria-hidden="true"
       >
-        <label htmlFor="website">NÃ£o preencha este campo</label>
+        <label htmlFor="website">Não preencha este campo</label>
         <input
           id="website"
           tabIndex={-1}
@@ -120,7 +120,7 @@ export function RegistrationForm({
         <input
           className={inputClass}
           autoComplete="name"
-          placeholder="Como estÃ¡ no seu documento"
+          placeholder="Seu nome completo"
           {...register("fullName")}
         />
       </Field>
@@ -132,7 +132,7 @@ export function RegistrationForm({
             className={inputClass}
             autoComplete="email"
             inputMode="email"
-            placeholder="voce@exemplo.com"
+            placeholder="voce@dominio.com"
             {...register("email")}
           />
         </Field>
@@ -321,7 +321,7 @@ export function RegistrationForm({
       </button>
 
       <p className="flex items-center justify-center gap-2 text-center text-xs text-zinc-500">
-        <CheckCircle2 className="size-4 text-emerald-500" /> Seus dados sÃ£o
+        <CheckCircle2 className="size-4 text-emerald-500" /> Seus dados são
         usados somente para a organização do evento.
       </p>
     </form>

@@ -12,7 +12,7 @@ describe("formatDateTime", () => {
     expect(result).toContain("11:12:30");
   });
 
-  it("usa o fuso padrÃ£o quando o fuso recebido Ã© invÃ¡lido", () => {
+  it("usa o fuso padrão quando o fuso recebido Ã© inválido", () => {
     const result = formatDateTime(
       "2026-08-05T14:12:30.000Z",
       "Fuso/Invalido",

@@ -113,7 +113,7 @@ export default async function RegistrationDetailPage({
           <Row label="Cidade" value={registration.city} />
           <Row
             label="Empresa"
-            value={registration.company_name ?? "NÃ£o informado"}
+            value={registration.company_name ?? "Não informado"}
           />
           <Row
             label="Cargo ou função"
@@ -152,7 +152,7 @@ export default async function RegistrationDetailPage({
             )}`}
           />
           <Row
-            label="VersÃ£o"
+            label="Versão"
             value={registration.privacy_policy_version}
           />
           <Row
@@ -160,7 +160,7 @@ export default async function RegistrationDetailPage({
             value={
               registration.communications_consent
                 ? "Aceito"
-                : "NÃ£o aceito"
+                : "Não aceito"
             }
           />
           {registration.cancelled_at ? (
@@ -169,7 +169,7 @@ export default async function RegistrationDetailPage({
               value={`${formatDateTime(
                 registration.cancelled_at,
                 event.timezone,
-              )} Â· ${
+              )} · ${
                 registration.cancellation_reason ?? "Sem motivo"
               }`}
             />
@@ -234,7 +234,7 @@ export default async function RegistrationDetailPage({
                 className="flex justify-between gap-3 border-b border-white/8 py-3 text-sm last:border-0"
               >
                 <span className="text-zinc-300">
-                  {log.result} Â· {log.method}
+                  {log.result} · {log.method}
                 </span>
                 <span className="text-xs text-zinc-600">
                   {formatDateTime(log.created_at, event.timezone)}

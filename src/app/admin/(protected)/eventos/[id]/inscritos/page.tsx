@@ -187,13 +187,13 @@ export default async function RegistrationsPage({
                   <td className="px-4 py-4 text-zinc-400">
                     <p>{row.email}</p>
                     <p className="mt-1">
-                      {formatPhone(row.phone)} Â· {row.city}
+                      {formatPhone(row.phone)} · {row.city}
                     </p>
                   </td>
 
                   <td className="px-4 py-4">
                     <p className="font-medium text-zinc-300">
-                      {row.company_name ?? "NÃ£o informado"}
+                      {row.company_name ?? "Não informado"}
                     </p>
                     <p className="mt-1 text-xs text-zinc-600">
                       {formatJobRole(
@@ -223,7 +223,7 @@ export default async function RegistrationsPage({
                             row.checked_in_at,
                             event.timezone,
                           )}{" "}
-                          Â· {row.checked_in_by_name ?? "Equipe"}
+                          · {row.checked_in_by_name ?? "Equipe"}
                         </p>
                       </>
                     ) : (
@@ -260,7 +260,7 @@ export default async function RegistrationsPage({
 
         <div className="flex items-center justify-between text-sm text-zinc-600">
           <span>
-            PÃ¡gina {page} de {pages}
+            Página {page} de {pages}
           </span>
           <div className="flex gap-2">
             {page > 1 ? (
