@@ -5,6 +5,7 @@ import { Download, ScanLine, Search } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
 import { hasEventRole } from "@/lib/auth/dal";
+import { formatDateTime } from "@/lib/date-time";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,7 +29,7 @@ export default async function RegistrationsPage({ params, searchParams }: PagePr
     supabase.rpc("list_event_registrations_admin", {
       target_event_id: id, search_term: q, status_filter: status, page_offset: (page - 1) * pageSize, page_limit: pageSize, sort_order: sort,
     }),
-    admin.from("events").select("name").eq("id", id).maybeSingle<{ name: string }>(),
+    admin.from("events").select("name,timezone").eq("id", id).maybeSingle<{ name: string; timezone: string }>(),
   ]);
   if (error || !event) notFound();
   const rows = (data ?? []) as RegistrationListRow[];
@@ -55,7 +56,7 @@ export default async function RegistrationsPage({ params, searchParams }: PagePr
           <table className="w-full min-w-[1000px] text-left text-sm">
             <thead className="bg-white/[0.035] text-xs uppercase tracking-wide text-zinc-600"><tr><th className="px-4 py-3">Participante</th><th className="px-4 py-3">Contato</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Inscrição</th><th className="px-4 py-3">Check-in</th><th className="px-4 py-3">Ações</th></tr></thead>
             <tbody className="divide-y divide-white/8">
-              {rows.map((row) => <tr key={row.registration_id} className="bg-white/[0.015]"><td className="px-4 py-4"><Link href={`/admin/eventos/${id}/inscritos/${row.registration_id}`} className="font-medium text-white hover:text-red-400">{row.full_name}</Link><p className="mt-1 font-mono text-xs text-zinc-600">{row.ticket_code}</p></td><td className="px-4 py-4 text-zinc-400"><p>{row.email}</p><p className="mt-1">{formatPhone(row.phone)} · {row.city}</p></td><td className="px-4 py-4"><StatusBadge status={row.registration_status} /></td><td className="px-4 py-4 text-zinc-500">{new Date(row.registered_at).toLocaleString("pt-BR")}</td><td className="px-4 py-4">{row.checked_in_at ? <><p className="text-emerald-400">Presente</p><p className="mt-1 text-xs text-zinc-600">{new Date(row.checked_in_at).toLocaleString("pt-BR")} · {row.checked_in_by_name ?? "Equipe"}</p></> : <span className="text-zinc-600">Pendente</span>}</td><td className="px-4 py-4"><RegistrationActions eventId={id} registrationId={row.registration_id} checkedIn={Boolean(row.checked_in_at)} cancelled={row.registration_status === "cancelled"} /></td></tr>)}
+              {rows.map((row) => <tr key={row.registration_id} className="bg-white/[0.015]"><td className="px-4 py-4"><Link href={`/admin/eventos/${id}/inscritos/${row.registration_id}`} className="font-medium text-white hover:text-red-400">{row.full_name}</Link><p className="mt-1 font-mono text-xs text-zinc-600">{row.ticket_code}</p></td><td className="px-4 py-4 text-zinc-400"><p>{row.email}</p><p className="mt-1">{formatPhone(row.phone)} · {row.city}</p></td><td className="px-4 py-4"><StatusBadge status={row.registration_status} /></td><td className="px-4 py-4 text-zinc-500">{formatDateTime(row.registered_at, event.timezone)}</td><td className="px-4 py-4">{row.checked_in_at ? <><p className="text-emerald-400">Presente</p><p className="mt-1 text-xs text-zinc-600">{formatDateTime(row.checked_in_at, event.timezone)} · {row.checked_in_by_name ?? "Equipe"}</p></> : <span className="text-zinc-600">Pendente</span>}</td><td className="px-4 py-4"><RegistrationActions eventId={id} registrationId={row.registration_id} checkedIn={Boolean(row.checked_in_at)} cancelled={row.registration_status === "cancelled"} /></td></tr>)}
               {rows.length === 0 ? <tr><td colSpan={6} className="px-4 py-12 text-center text-zinc-600">Nenhuma inscrição encontrada.</td></tr> : null}
             </tbody>
           </table>

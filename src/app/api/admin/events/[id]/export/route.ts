@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getCurrentStaff, hasEventRole } from "@/lib/auth/dal";
 import { createBrazilianCsv } from "@/lib/csv";
+import { formatDateTime } from "@/lib/date-time";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type ExportRow = {
@@ -17,7 +18,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const supabase = createAdminClient();
   const [{ data: event }, { data, error }] = await Promise.all([
-    supabase.from("events").select("slug").eq("id", id).single<{ slug: string }>(),
+    supabase.from("events").select("slug,timezone").eq("id", id).single<{ slug: string; timezone: string }>(),
     supabase.from("registrations").select("full_name,email,phone,city,status,registered_at,checked_in_at,custom_answers").eq("event_id", id).order("registered_at", { ascending: true }).limit(10000),
   ]);
   if (error || !event) return NextResponse.json({ success: false }, { status: 500 });
@@ -26,9 +27,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const headers = ["Nome", "E-mail", "Telefone", "Cidade", "Status", "Data da inscrição", "Presença", "Horário do check-in", "Respostas personalizadas"];
   const csvRows = rows.map((row) => [
     row.full_name, row.email, row.phone, row.city, row.status,
-    new Date(row.registered_at).toLocaleString("pt-BR"),
+    formatDateTime(row.registered_at, event.timezone),
     row.checked_in_at ? "Sim" : "Não",
-    row.checked_in_at ? new Date(row.checked_in_at).toLocaleString("pt-BR") : "",
+    row.checked_in_at ? formatDateTime(row.checked_in_at, event.timezone) : "",
     JSON.stringify(row.custom_answers ?? {}),
   ]);
   const csv = createBrazilianCsv(headers, csvRows);

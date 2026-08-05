@@ -4,6 +4,7 @@ import { History, Search } from "lucide-react";
 
 import { PageHeader } from "@/components/admin/page-header";
 import { hasEventRole } from "@/lib/auth/dal";
+import { formatDateTime } from "@/lib/date-time";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type AuditRow = {
@@ -55,7 +56,7 @@ export default async function EventLogsPage({
   if (action) logsQuery = logsQuery.eq("action", action);
 
   const [{ data: event }, { data, count, error }] = await Promise.all([
-    supabase.from("events").select("name").eq("id", id).maybeSingle<{ name: string }>(),
+    supabase.from("events").select("name,timezone").eq("id", id).maybeSingle<{ name: string; timezone: string }>(),
     logsQuery,
   ]);
   if (!event || error) notFound();
@@ -104,7 +105,7 @@ export default async function EventLogsPage({
                   <AuditDetails metadata={log.metadata} />
                 </div>
               </div>
-              <time className="shrink-0 text-xs text-zinc-600" dateTime={log.created_at}>{new Date(log.created_at).toLocaleString("pt-BR")}</time>
+              <time className="shrink-0 text-xs text-zinc-600" dateTime={log.created_at}>{formatDateTime(log.created_at, event.timezone)}</time>
             </div>
           ))}
           {logs.length === 0 ? <p className="p-12 text-center text-sm text-zinc-600">Nenhuma ação encontrada.</p> : null}
