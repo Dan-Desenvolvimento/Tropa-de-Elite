@@ -1,14 +1,49 @@
 import Image from "next/image";
-import Link from "next/link";
-import { CalendarRange, LayoutDashboard, LogOut, ScanLine, UsersRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { signOut } from "@/app/admin/actions";
+import { AdminSidebarNav } from "@/features/admin/components/admin-sidebar-nav";
+import { getEventSummaries } from "@/features/admin/server/get-event-summaries";
 import { requireStaff } from "@/lib/auth/dal";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
+export default async function ProtectedAdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const staff = await requireStaff();
+  const summaries = await getEventSummaries();
+
+  const statusPriority: Record<string, number> = {
+    open: 0,
+    closed: 1,
+    sold_out: 2,
+    draft: 3,
+    finished: 4,
+    cancelled: 5,
+  };
+
+  const events = [...summaries]
+    .sort((left, right) => {
+      const statusDifference =
+        (statusPriority[left.event_status] ?? 99) -
+        (statusPriority[right.event_status] ?? 99);
+
+      if (statusDifference !== 0) return statusDifference;
+
+      return (
+        new Date(right.start_at).getTime() -
+        new Date(left.start_at).getTime()
+      );
+    })
+    .map((event) => ({
+      id: event.event_id,
+      name: event.event_name,
+      status: event.event_status,
+      startAt: event.start_at,
+    }));
 
   return (
     <div className="min-h-screen bg-[#070708] text-white lg:grid lg:grid-cols-[260px_1fr]">
@@ -23,40 +58,30 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
           />
         </div>
 
-        <nav className="mt-4 flex gap-2 overflow-x-auto lg:mt-8 lg:flex-col lg:overflow-visible">
-          <NavLink href="/admin" icon={LayoutDashboard}>Visão geral</NavLink>
-          {staff.globalRole === "admin" ? (
-            <>
-              <NavLink href="/admin/eventos" icon={CalendarRange}>Eventos</NavLink>
-              <NavLink href="/admin/equipe" icon={UsersRound}>Equipe</NavLink>
-            </>
-          ) : (
-            <NavLink href="/admin/eventos" icon={ScanLine}>Check-in</NavLink>
-          )}
-        </nav>
+        <AdminSidebarNav
+          globalRole={staff.globalRole}
+          events={events}
+        />
 
         <div className="mt-5 hidden border-t border-white/8 pt-5 lg:absolute lg:bottom-6 lg:left-5 lg:right-5 lg:block">
-          <p className="truncate text-sm font-medium text-zinc-300">{staff.fullName}</p>
-          <p className="mt-1 text-xs text-zinc-600">{staff.globalRole === "admin" ? "Administrador" : "Operador"}</p>
+          <p className="truncate text-sm font-medium text-zinc-300">
+            {staff.fullName}
+          </p>
+          <p className="mt-1 text-xs text-zinc-600">
+            {staff.globalRole === "admin"
+              ? "Administrador"
+              : "Operador"}
+          </p>
           <form action={signOut} className="mt-4">
             <button className="flex items-center gap-2 text-sm text-zinc-500 transition hover:text-white">
-              <LogOut className="size-4" /> Sair
+              <LogOut className="size-4" />
+              Sair
             </button>
           </form>
         </div>
       </aside>
+
       <div className="min-w-0">{children}</div>
     </div>
-  );
-}
-
-function NavLink({ href, icon: Icon, children }: { href: string; icon: typeof LayoutDashboard; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-white/5 hover:text-white"
-    >
-      <Icon className="size-4 text-red-500" /> {children}
-    </Link>
   );
 }
