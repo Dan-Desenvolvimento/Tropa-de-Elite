@@ -1,27 +1,67 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getCurrentStaff } from "@/lib/auth/dal";
+import {
+  getCurrentStaff,
+  hasGlobalPermission,
+} from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+const eventPermissionsSchema = z.object({
+  canEditEvent: z.boolean(),
+  canCheckin: z.boolean(),
+  canViewRegistrations: z.boolean(),
+  canManageRegistrations: z.boolean(),
+  canAnonymizeRegistrations: z.boolean(),
+  canViewReports: z.boolean(),
+  canViewLogs: z.boolean(),
+});
 
 const createStaffSchema = z
   .object({
     fullName: z.string().trim().min(3).max(120),
-    email: z.string().trim().toLowerCase().email().max(254),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email()
+      .max(254),
     password: z.string().min(8).max(72),
-    globalRole: z.enum(["admin", "checkin_operator"]),
+    isOwner: z.boolean(),
+    canCreateEvents: z.boolean(),
+    canManageTeam: z.boolean(),
     eventId: z.string().uuid().nullable(),
+    eventPermissions: eventPermissionsSchema,
   })
   .superRefine((data, context) => {
+    const hasEventPermission = Object.values(
+      data.eventPermissions,
+    ).some(Boolean);
+
     if (
-      data.globalRole === "checkin_operator" &&
+      !data.isOwner &&
+      !data.canCreateEvents &&
+      !data.canManageTeam &&
+      !hasEventPermission
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["eventPermissions"],
+        message:
+          "Escolha ao menos uma permissão para o integrante.",
+      });
+    }
+
+    if (
+      !data.isOwner &&
+      hasEventPermission &&
       data.eventId === null
     ) {
       context.addIssue({
         code: "custom",
         path: ["eventId"],
         message:
-          "Selecione o evento ao qual o operador terá acesso.",
+          "Selecione o evento das permissões iniciais.",
       });
     }
   });
@@ -31,14 +71,23 @@ export async function POST(request: Request) {
 
   if (!staff) {
     return NextResponse.json(
-      { success: false, message: "Não autenticado." },
+      {
+        success: false,
+        message: "Não autenticado.",
+      },
       { status: 401 },
     );
   }
 
-  if (staff.globalRole !== "admin") {
+  if (
+    !(await hasGlobalPermission("manage_team"))
+  ) {
     return NextResponse.json(
-      { success: false, message: "Sem permissão." },
+      {
+        success: false,
+        message:
+          "Sem permissão para gerenciar a equipe.",
+      },
       { status: 403 },
     );
   }
@@ -59,6 +108,26 @@ export async function POST(request: Request) {
     );
   }
 
+  if (
+    !staff.isOwner &&
+    (
+      parsed.data.isOwner ||
+      parsed.data.canCreateEvents ||
+      parsed.data.canManageTeam ||
+      parsed.data.eventPermissions
+        .canAnonymizeRegistrations
+    )
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          "Somente um proprietário pode conceder permissões gerais, anonimização ou acesso de proprietário.",
+      },
+      { status: 403 },
+    );
+  }
+
   const supabase = createAdminClient();
 
   const { data, error } =
@@ -68,7 +137,6 @@ export async function POST(request: Request) {
       email_confirm: true,
       user_metadata: {
         full_name: parsed.data.fullName,
-        global_role: parsed.data.globalRole,
       },
     });
 
@@ -90,8 +158,11 @@ export async function POST(request: Request) {
     .upsert({
       id: userId,
       full_name: parsed.data.fullName,
-      global_role: parsed.data.globalRole,
+      global_role: "checkin_operator",
       active: true,
+      is_owner: false,
+      can_create_events: false,
+      can_manage_team: false,
     });
 
   if (profileError) {
@@ -107,33 +178,40 @@ export async function POST(request: Request) {
     );
   }
 
-  if (
-    parsed.data.globalRole === "checkin_operator" &&
-    parsed.data.eventId
-  ) {
-    const { error: eventStaffError } = await supabase
-      .from("event_staff")
-      .upsert(
+  const eventPermissions = parsed.data.eventId
+    ? [
         {
-          event_id: parsed.data.eventId,
-          user_id: userId,
-          role: "checkin_operator",
+          eventId: parsed.data.eventId,
+          ...parsed.data.eventPermissions,
         },
-        { onConflict: "event_id,user_id" },
-      );
+      ]
+    : [];
 
-    if (eventStaffError) {
-      await supabase.auth.admin.deleteUser(userId);
+  const { error: accessError } =
+    await supabase.rpc(
+      "replace_staff_permissions",
+      {
+        target_user_id: userId,
+        owner_access: parsed.data.isOwner,
+        create_events_access:
+          parsed.data.canCreateEvents,
+        manage_team_access:
+          parsed.data.canManageTeam,
+        event_permissions: eventPermissions,
+      },
+    );
 
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Não foi possível vincular o integrante ao evento.",
-        },
-        { status: 500 },
-      );
-    }
+  if (accessError) {
+    await supabase.auth.admin.deleteUser(userId);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          "Não foi possível aplicar as permissões do integrante.",
+      },
+      { status: 500 },
+    );
   }
 
   await supabase.from("audit_logs").insert({
@@ -142,7 +220,12 @@ export async function POST(request: Request) {
     action: "staff_created_with_password",
     entity_type: "profile",
     entity_id: userId,
-    metadata: { role: parsed.data.globalRole },
+    metadata: {
+      owner: parsed.data.isOwner,
+      createEvents:
+        parsed.data.canCreateEvents,
+      manageTeam: parsed.data.canManageTeam,
+    },
   });
 
   return NextResponse.json(

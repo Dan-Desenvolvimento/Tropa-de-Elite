@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Download, ScanLine, Search } from "lucide-react";
+import {
+  Download,
+  ScanLine,
+  Search,
+} from "lucide-react";
 
 import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
 import { formatJobRole } from "@/features/registrations/job-roles";
-import { hasEventRole } from "@/lib/auth/dal";
+import { getEventPermissionSet } from "@/lib/auth/dal";
 import { formatDateTime } from "@/lib/date-time";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +23,10 @@ type RegistrationListRow = {
   company_name: string | null;
   job_role: string | null;
   job_role_other: string | null;
-  registration_status: "confirmed" | "waitlist" | "cancelled";
+  registration_status:
+    | "confirmed"
+    | "waitlist"
+    | "cancelled";
   ticket_code: string;
   registered_at: string;
   checked_in_at: string | null;
@@ -31,27 +38,53 @@ export default async function RegistrationsPage({
   params,
   searchParams,
 }: PageProps<"/admin/eventos/[id]/inscritos">) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const [{ id }, query] = await Promise.all([
+    params,
+    searchParams,
+  ]);
 
-  if (!(await hasEventRole(id, ["admin"]))) notFound();
+  const permissions =
+    await getEventPermissionSet(id);
+
+  if (
+    !permissions.canViewRegistrations &&
+    !permissions.canManageRegistrations &&
+    !permissions.canAnonymizeRegistrations
+  ) {
+    notFound();
+  }
 
   const q =
-    typeof query.q === "string" ? query.q.slice(0, 120) : "";
+    typeof query.q === "string"
+      ? query.q.slice(0, 120)
+      : "";
   const status =
     typeof query.status === "string" &&
-    ["confirmed", "waitlist", "cancelled"].includes(query.status)
-      ? (query.status as "confirmed" | "waitlist" | "cancelled")
+    ["confirmed", "waitlist", "cancelled"].includes(
+      query.status,
+    )
+      ? (query.status as
+          | "confirmed"
+          | "waitlist"
+          | "cancelled")
       : null;
   const sort =
     typeof query.sort === "string" &&
-    ["newest", "oldest", "name_asc", "name_desc"].includes(
-      query.sort,
-    )
+    [
+      "newest",
+      "oldest",
+      "name_asc",
+      "name_desc",
+    ].includes(query.sort)
       ? query.sort
       : "newest";
   const page = Math.max(
     1,
-    Number(typeof query.page === "string" ? query.page : "1") || 1,
+    Number(
+      typeof query.page === "string"
+        ? query.page
+        : "1",
+    ) || 1,
   );
   const pageSize = 25;
 
@@ -60,55 +93,83 @@ export default async function RegistrationsPage({
     Promise.resolve(createAdminClient()),
   ]);
 
-  const [{ data, error }, { data: event }] = await Promise.all([
-    supabase.rpc("list_event_registrations_admin", {
-      target_event_id: id,
-      search_term: q,
-      status_filter: status,
-      page_offset: (page - 1) * pageSize,
-      page_limit: pageSize,
-      sort_order: sort,
-    }),
+  const [
+    { data, error },
+    { data: event },
+  ] = await Promise.all([
+    supabase.rpc(
+      "list_event_registrations_admin",
+      {
+        target_event_id: id,
+        search_term: q,
+        status_filter: status,
+        page_offset: (page - 1) * pageSize,
+        page_limit: pageSize,
+        sort_order: sort,
+      },
+    ),
     admin
       .from("events")
       .select("name,timezone")
       .eq("id", id)
-      .maybeSingle<{ name: string; timezone: string }>(),
+      .maybeSingle<{
+        name: string;
+        timezone: string;
+      }>(),
   ]);
 
   if (error || !event) notFound();
 
-  const rows = (data ?? []) as RegistrationListRow[];
-  const total = Number(rows[0]?.total_count ?? 0);
-  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const rows =
+    (data ?? []) as RegistrationListRow[];
+  const total = Number(
+    rows[0]?.total_count ?? 0,
+  );
+  const pages = Math.max(
+    1,
+    Math.ceil(total / pageSize),
+  );
+
+  const hasHeaderActions =
+    permissions.canViewReports ||
+    permissions.canCheckin;
 
   return (
     <main>
       <PageHeader
         eyebrow="Participantes"
         title={event.name}
-        description={`${total.toLocaleString("pt-BR")} ${
+        description={`${total.toLocaleString(
+          "pt-BR",
+        )} ${
           total === 1
             ? "inscrição encontrada"
             : "inscrições encontradas"
         }.`}
         actions={
-          <>
-            <a
-              href={`/api/admin/events/${id}/export`}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-zinc-300 hover:bg-white/5"
-            >
-              <Download className="size-4" />
-              Exportar CSV
-            </a>
-            <Link
-              href={`/admin/eventos/${id}/checkin`}
-              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-500"
-            >
-              <ScanLine className="size-4" />
-              Check-in
-            </Link>
-          </>
+          hasHeaderActions ? (
+            <>
+              {permissions.canViewReports ? (
+                <a
+                  href={`/api/admin/events/${id}/export`}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-3 text-sm text-zinc-300 hover:bg-white/5"
+                >
+                  <Download className="size-4" />
+                  Exportar CSV
+                </a>
+              ) : null}
+
+              {permissions.canCheckin ? (
+                <Link
+                  href={`/admin/eventos/${id}/checkin`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-500"
+                >
+                  <ScanLine className="size-4" />
+                  Check-in
+                </Link>
+              ) : null}
+            </>
+          ) : undefined
         }
       />
 
@@ -129,10 +190,18 @@ export default async function RegistrationsPage({
             defaultValue={status ?? ""}
             className="h-11 rounded-xl border border-white/10 bg-[#111114] px-3 text-sm text-zinc-300"
           >
-            <option value="">Todos os status</option>
-            <option value="confirmed">Confirmado</option>
-            <option value="waitlist">Lista de espera</option>
-            <option value="cancelled">Cancelado</option>
+            <option value="">
+              Todos os status
+            </option>
+            <option value="confirmed">
+              Confirmado
+            </option>
+            <option value="waitlist">
+              Lista de espera
+            </option>
+            <option value="cancelled">
+              Cancelado
+            </option>
           </select>
 
           <select
@@ -141,10 +210,18 @@ export default async function RegistrationsPage({
             aria-label="Ordenação"
             className="h-11 rounded-xl border border-white/10 bg-[#111114] px-3 text-sm text-zinc-300"
           >
-            <option value="newest">Mais recentes</option>
-            <option value="oldest">Mais antigas</option>
-            <option value="name_asc">Nome Aâ€“Z</option>
-            <option value="name_desc">Nome Zâ€“A</option>
+            <option value="newest">
+              Mais recentes
+            </option>
+            <option value="oldest">
+              Mais antigas
+            </option>
+            <option value="name_asc">
+              Nome A–Z
+            </option>
+            <option value="name_desc">
+              Nome Z–A
+            </option>
           </select>
 
           <button className="h-11 rounded-xl bg-white/10 px-5 text-sm font-semibold text-white hover:bg-white/15">
@@ -156,13 +233,27 @@ export default async function RegistrationsPage({
           <table className="w-full min-w-[1180px] text-left text-sm">
             <thead className="bg-white/[0.035] text-xs uppercase tracking-wide text-zinc-600">
               <tr>
-                <th className="px-4 py-3">Participante</th>
-                <th className="px-4 py-3">Contato</th>
-                <th className="px-4 py-3">Empresa e cargo</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Inscrição</th>
-                <th className="px-4 py-3">Check-in</th>
-                <th className="px-4 py-3">Ações</th>
+                <th className="px-4 py-3">
+                  Participante
+                </th>
+                <th className="px-4 py-3">
+                  Contato
+                </th>
+                <th className="px-4 py-3">
+                  Empresa e cargo
+                </th>
+                <th className="px-4 py-3">
+                  Status
+                </th>
+                <th className="px-4 py-3">
+                  Inscrição
+                </th>
+                <th className="px-4 py-3">
+                  Check-in
+                </th>
+                <th className="px-4 py-3">
+                  Ações
+                </th>
               </tr>
             </thead>
 
@@ -187,13 +278,15 @@ export default async function RegistrationsPage({
                   <td className="px-4 py-4 text-zinc-400">
                     <p>{row.email}</p>
                     <p className="mt-1">
-                      {formatPhone(row.phone)} · {row.city}
+                      {formatPhone(row.phone)} ·{" "}
+                      {row.city}
                     </p>
                   </td>
 
                   <td className="px-4 py-4">
                     <p className="font-medium text-zinc-300">
-                      {row.company_name ?? "Não informado"}
+                      {row.company_name ??
+                        "Não informado"}
                     </p>
                     <p className="mt-1 text-xs text-zinc-600">
                       {formatJobRole(
@@ -204,7 +297,11 @@ export default async function RegistrationsPage({
                   </td>
 
                   <td className="px-4 py-4">
-                    <StatusBadge status={row.registration_status} />
+                    <StatusBadge
+                      status={
+                        row.registration_status
+                      }
+                    />
                   </td>
 
                   <td className="px-4 py-4 text-zinc-500">
@@ -217,27 +314,44 @@ export default async function RegistrationsPage({
                   <td className="px-4 py-4">
                     {row.checked_in_at ? (
                       <>
-                        <p className="text-emerald-400">Presente</p>
+                        <p className="text-emerald-400">
+                          Presente
+                        </p>
                         <p className="mt-1 text-xs text-zinc-600">
                           {formatDateTime(
                             row.checked_in_at,
                             event.timezone,
                           )}{" "}
-                          · {row.checked_in_by_name ?? "Equipe"}
+                          ·{" "}
+                          {row.checked_in_by_name ??
+                            "Equipe"}
                         </p>
                       </>
                     ) : (
-                      <span className="text-zinc-600">Pendente</span>
+                      <span className="text-zinc-600">
+                        Pendente
+                      </span>
                     )}
                   </td>
 
                   <td className="px-4 py-4">
                     <RegistrationActions
                       eventId={id}
-                      registrationId={row.registration_id}
-                      checkedIn={Boolean(row.checked_in_at)}
+                      registrationId={
+                        row.registration_id
+                      }
+                      checkedIn={Boolean(
+                        row.checked_in_at,
+                      )}
                       cancelled={
-                        row.registration_status === "cancelled"
+                        row.registration_status ===
+                        "cancelled"
+                      }
+                      canManage={
+                        permissions.canManageRegistrations
+                      }
+                      canAnonymize={
+                        permissions.canAnonymizeRegistrations
                       }
                     />
                   </td>
@@ -265,18 +379,29 @@ export default async function RegistrationsPage({
           <div className="flex gap-2">
             {page > 1 ? (
               <Link
-                href={pageHref(page - 1, q, status, sort)}
+                href={pageHref(
+                  page - 1,
+                  q,
+                  status,
+                  sort,
+                )}
                 className="rounded-lg border border-white/10 px-3 py-2 hover:text-white"
               >
                 Anterior
               </Link>
             ) : null}
+
             {page < pages ? (
               <Link
-                href={pageHref(page + 1, q, status, sort)}
+                href={pageHref(
+                  page + 1,
+                  q,
+                  status,
+                  sort,
+                )}
                 className="rounded-lg border border-white/10 px-3 py-2 hover:text-white"
               >
-                PrÃ³xima
+                Próxima
               </Link>
             ) : null}
           </div>
@@ -286,7 +411,11 @@ export default async function RegistrationsPage({
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({
+  status,
+}: {
+  status: string;
+}) {
   const label =
     status === "confirmed"
       ? "Confirmado"
@@ -311,7 +440,10 @@ function StatusBadge({ status }: { status: string }) {
 
 function formatPhone(phone: string) {
   return phone.length === 11
-    ? `(${phone.slice(0, 2)}) ${phone.slice(2, 7)}-${phone.slice(7)}`
+    ? `(${phone.slice(0, 2)}) ${phone.slice(
+        2,
+        7,
+      )}-${phone.slice(7)}`
     : phone;
 }
 

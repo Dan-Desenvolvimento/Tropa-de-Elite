@@ -19,28 +19,42 @@ type SidebarEvent = {
   name: string;
   status: string;
   startAt: string;
+  canEditEvent: boolean;
+  canCheckin: boolean;
+  canViewRegistrations: boolean;
+  canManageRegistrations: boolean;
+  canAnonymizeRegistrations: boolean;
+  canViewReports: boolean;
+  canViewLogs: boolean;
 };
 
 type AdminSidebarNavProps = {
-  globalRole: "admin" | "checkin_operator";
+  isOwner: boolean;
+  canCreateEvents: boolean;
+  canManageTeam: boolean;
   events: SidebarEvent[];
 };
 
 export function AdminSidebarNav({
-  globalRole,
+  isOwner,
+  canCreateEvents,
+  canManageTeam,
   events,
 }: AdminSidebarNavProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const isAdmin = globalRole === "admin";
 
   const pathEventId = useMemo(
-    () => pathname.match(/^\/admin\/eventos\/([^/]+)/)?.[1] ?? null,
+    () =>
+      pathname.match(
+        /^\/admin\/eventos\/([^/]+)/,
+      )?.[1] ?? null,
     [pathname],
   );
 
   const defaultEventId =
-    pathEventId && events.some((event) => event.id === pathEventId)
+    pathEventId &&
+    events.some((event) => event.id === pathEventId)
       ? pathEventId
       : events[0]?.id ?? "";
 
@@ -58,7 +72,9 @@ export function AdminSidebarNav({
 
     if (
       selectedEventId &&
-      events.some((event) => event.id === selectedEventId)
+      events.some(
+        (event) => event.id === selectedEventId,
+      )
     ) {
       return;
     }
@@ -66,32 +82,88 @@ export function AdminSidebarNav({
     setSelectedEventId(events[0]?.id ?? "");
   }, [events, pathEventId, selectedEventId]);
 
+  const selectedEvent =
+    events.find(
+      (event) => event.id === selectedEventId,
+    ) ?? null;
+
   const eventSection = getEventSection(pathname);
   const eventsAreaActive =
     pathname === "/admin/eventos" ||
     pathname === "/admin/eventos/novo" ||
     /^\/admin\/eventos\/[^/]+$/.test(pathname);
 
+  function destinationFor(
+    event: SidebarEvent,
+    preferredSection: string | null,
+  ) {
+    if (
+      preferredSection === "checkin" &&
+      event.canCheckin
+    ) {
+      return `/admin/eventos/${event.id}/checkin`;
+    }
+
+    if (
+      preferredSection === "inscritos" &&
+      (
+        event.canViewRegistrations ||
+        event.canManageRegistrations ||
+        event.canAnonymizeRegistrations
+      )
+    ) {
+      return `/admin/eventos/${event.id}/inscritos`;
+    }
+
+    if (
+      preferredSection === "relatorios" &&
+      event.canViewReports
+    ) {
+      return `/admin/eventos/${event.id}/relatorios`;
+    }
+
+    if (
+      preferredSection === "logs" &&
+      event.canViewLogs
+    ) {
+      return `/admin/eventos/${event.id}/logs`;
+    }
+
+    if (event.canEditEvent) {
+      return `/admin/eventos/${event.id}`;
+    }
+
+    if (event.canCheckin) {
+      return `/admin/eventos/${event.id}/checkin`;
+    }
+
+    if (
+      event.canViewRegistrations ||
+      event.canManageRegistrations ||
+      event.canAnonymizeRegistrations
+    ) {
+      return `/admin/eventos/${event.id}/inscritos`;
+    }
+
+    if (event.canViewReports) {
+      return `/admin/eventos/${event.id}/relatorios`;
+    }
+
+    return `/admin/eventos/${event.id}/logs`;
+  }
+
   function selectEvent(eventId: string) {
     setSelectedEventId(eventId);
 
-    if (!isAdmin) {
-      router.push(`/admin/eventos/${eventId}/checkin`);
-      return;
+    const event = events.find(
+      (item) => item.id === eventId,
+    );
+
+    if (event) {
+      router.push(
+        destinationFor(event, eventSection),
+      );
     }
-
-    const destination =
-      eventSection === "checkin"
-        ? `/admin/eventos/${eventId}/checkin`
-        : eventSection === "inscritos"
-          ? `/admin/eventos/${eventId}/inscritos`
-          : eventSection === "relatorios"
-            ? `/admin/eventos/${eventId}/relatorios`
-            : eventSection === "logs"
-              ? `/admin/eventos/${eventId}/logs`
-              : `/admin/eventos/${eventId}`;
-
-    router.push(destination);
   }
 
   const eventHref = (section: string) =>
@@ -119,17 +191,22 @@ export function AdminSidebarNav({
         </SidebarLink>
       </nav>
 
-      {events.length > 0 ? (
+      {events.length > 0 && selectedEvent ? (
         <section className="min-w-[230px] rounded-2xl border border-white/8 bg-white/[0.025] p-3">
           <label className="block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">
             Evento em foco
             <select
               value={selectedEventId}
-              onChange={(event) => selectEvent(event.target.value)}
+              onChange={(event) =>
+                selectEvent(event.target.value)
+              }
               className="mt-2 h-10 w-full rounded-xl border border-white/10 bg-[#111114] px-3 text-xs font-medium normal-case tracking-normal text-zinc-300 outline-none focus:border-red-500/60"
             >
               {events.map((event) => (
-                <option key={event.id} value={event.id}>
+                <option
+                  key={event.id}
+                  value={event.id}
+                >
                   {event.name}
                 </option>
               ))}
@@ -137,51 +214,59 @@ export function AdminSidebarNav({
           </label>
 
           <nav className="mt-3 flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
-            <SidebarLink
-              href={eventHref("checkin")}
-              icon={ScanLine}
-              active={eventSection === "checkin"}
-            >
-              Check-in
-            </SidebarLink>
+            {selectedEvent.canCheckin ? (
+              <SidebarLink
+                href={eventHref("checkin")}
+                icon={ScanLine}
+                active={eventSection === "checkin"}
+              >
+                Check-in
+              </SidebarLink>
+            ) : null}
 
-            {isAdmin ? (
-              <>
-                <SidebarLink
-                  href={eventHref("inscritos")}
-                  icon={UsersRound}
-                  active={eventSection === "inscritos"}
-                >
-                  Inscritos
-                </SidebarLink>
+            {selectedEvent.canViewRegistrations ||
+            selectedEvent.canManageRegistrations ||
+            selectedEvent.canAnonymizeRegistrations ? (
+              <SidebarLink
+                href={eventHref("inscritos")}
+                icon={UsersRound}
+                active={eventSection === "inscritos"}
+              >
+                Inscritos
+              </SidebarLink>
+            ) : null}
 
-                <SidebarLink
-                  href={eventHref("relatorios")}
-                  icon={BarChart3}
-                  active={eventSection === "relatorios"}
-                >
-                  Relatórios
-                </SidebarLink>
+            {selectedEvent.canViewReports ? (
+              <SidebarLink
+                href={eventHref("relatorios")}
+                icon={BarChart3}
+                active={eventSection === "relatorios"}
+              >
+                Relatórios
+              </SidebarLink>
+            ) : null}
 
-                <SidebarLink
-                  href={eventHref("logs")}
-                  icon={History}
-                  active={eventSection === "logs"}
-                >
-                  Histórico
-                </SidebarLink>
-              </>
+            {selectedEvent.canViewLogs ? (
+              <SidebarLink
+                href={eventHref("logs")}
+                icon={History}
+                active={eventSection === "logs"}
+              >
+                Histórico
+              </SidebarLink>
             ) : null}
           </nav>
         </section>
       ) : null}
 
       <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
-        {isAdmin ? (
+        {isOwner || canManageTeam ? (
           <SidebarLink
             href="/admin/equipe"
             icon={UsersRound}
-            active={pathname === "/admin/equipe"}
+            active={pathname.startsWith(
+              "/admin/equipe",
+            )}
           >
             Equipe
           </SidebarLink>
@@ -195,6 +280,12 @@ export function AdminSidebarNav({
           Minha senha
         </SidebarLink>
       </nav>
+
+      {isOwner || canCreateEvents ? (
+        <p className="px-3 text-[10px] leading-4 text-zinc-700">
+          Você pode criar novos eventos.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -227,9 +318,17 @@ function SidebarLink({
 }
 
 function getEventSection(pathname: string) {
-  if (/\/checkin(?:\/|$)/.test(pathname)) return "checkin";
-  if (/\/inscritos(?:\/|$)/.test(pathname)) return "inscritos";
-  if (/\/relatorios(?:\/|$)/.test(pathname)) return "relatorios";
-  if (/\/logs(?:\/|$)/.test(pathname)) return "logs";
+  if (/\/checkin(?:\/|$)/.test(pathname)) {
+    return "checkin";
+  }
+  if (/\/inscritos(?:\/|$)/.test(pathname)) {
+    return "inscritos";
+  }
+  if (/\/relatorios(?:\/|$)/.test(pathname)) {
+    return "relatorios";
+  }
+  if (/\/logs(?:\/|$)/.test(pathname)) {
+    return "logs";
+  }
   return null;
 }

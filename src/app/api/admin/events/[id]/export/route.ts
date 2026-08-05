@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { formatJobRole } from "@/features/registrations/job-roles";
-import { getCurrentStaff, hasEventRole } from "@/lib/auth/dal";
+import {
+  getCurrentStaff,
+  hasEventPermission,
+} from "@/lib/auth/dal";
 import { createBrazilianCsv } from "@/lib/csv";
 import { formatDateTime } from "@/lib/date-time";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,7 +25,11 @@ type ExportRow = {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{ id: string }>;
+  },
 ) {
   const staff = await getCurrentStaff();
 
@@ -35,7 +42,12 @@ export async function GET(
 
   const { id } = await params;
 
-  if (!(await hasEventRole(id, ["admin"]))) {
+  if (
+    !(await hasEventPermission(
+      id,
+      "view_reports",
+    ))
+  ) {
     return NextResponse.json(
       { success: false },
       { status: 403 },
@@ -44,19 +56,27 @@ export async function GET(
 
   const supabase = createAdminClient();
 
-  const [{ data: event }, { data, error }] = await Promise.all([
+  const [
+    { data: event },
+    { data, error },
+  ] = await Promise.all([
     supabase
       .from("events")
       .select("slug,timezone")
       .eq("id", id)
-      .single<{ slug: string; timezone: string }>(),
+      .single<{
+        slug: string;
+        timezone: string;
+      }>(),
     supabase
       .from("registrations")
       .select(
         "full_name,email,phone,city,company_name,job_role,job_role_other,status,registered_at,checked_in_at,custom_answers",
       )
       .eq("event_id", id)
-      .order("registered_at", { ascending: true })
+      .order("registered_at", {
+        ascending: true,
+      })
       .limit(10000),
   ]);
 
@@ -88,17 +108,29 @@ export async function GET(
     row.phone,
     row.city,
     row.company_name ?? "",
-    formatJobRole(row.job_role, row.job_role_other),
+    formatJobRole(
+      row.job_role,
+      row.job_role_other,
+    ),
     row.status,
-    formatDateTime(row.registered_at, event.timezone),
+    formatDateTime(
+      row.registered_at,
+      event.timezone,
+    ),
     row.checked_in_at ? "Sim" : "Não",
     row.checked_in_at
-      ? formatDateTime(row.checked_in_at, event.timezone)
+      ? formatDateTime(
+          row.checked_in_at,
+          event.timezone,
+        )
       : "",
     JSON.stringify(row.custom_answers ?? {}),
   ]);
 
-  const csv = createBrazilianCsv(headers, csvRows);
+  const csv = createBrazilianCsv(
+    headers,
+    csvRows,
+  );
 
   await supabase.from("audit_logs").insert({
     actor_id: staff.id,
@@ -111,8 +143,10 @@ export async function GET(
 
   return new NextResponse(csv, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="inscritos-${event.slug}.csv"`,
+      "Content-Type":
+        "text/csv; charset=utf-8",
+      "Content-Disposition":
+        `attachment; filename="inscritos-${event.slug}.csv"`,
       "Cache-Control": "private, no-store",
     },
   });

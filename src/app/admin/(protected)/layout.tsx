@@ -31,7 +31,9 @@ export default async function ProtectedAdminLayout({
         (statusPriority[left.event_status] ?? 99) -
         (statusPriority[right.event_status] ?? 99);
 
-      if (statusDifference !== 0) return statusDifference;
+      if (statusDifference !== 0) {
+        return statusDifference;
+      }
 
       return (
         new Date(right.start_at).getTime() -
@@ -43,7 +45,25 @@ export default async function ProtectedAdminLayout({
       name: event.event_name,
       status: event.event_status,
       startAt: event.start_at,
+      canEditEvent: event.can_edit_event,
+      canCheckin: event.can_checkin,
+      canViewRegistrations:
+        event.can_view_registrations,
+      canManageRegistrations:
+        event.can_manage_registrations,
+      canAnonymizeRegistrations:
+        event.can_anonymize_registrations,
+      canViewReports: event.can_view_reports,
+      canViewLogs: event.can_view_logs,
     }));
+
+  const roleLabel = staff.isOwner
+    ? "Proprietário"
+    : staff.canManageTeam
+      ? "Gestor de equipe"
+      : staff.canCreateEvents
+        ? "Criador de eventos"
+        : "Equipe";
 
   return (
     <div className="min-h-screen bg-[#070708] text-white lg:grid lg:grid-cols-[260px_1fr]">
@@ -59,7 +79,9 @@ export default async function ProtectedAdminLayout({
         </div>
 
         <AdminSidebarNav
-          globalRole={staff.globalRole}
+          isOwner={staff.isOwner}
+          canCreateEvents={staff.canCreateEvents}
+          canManageTeam={staff.canManageTeam}
           events={events}
         />
 
@@ -68,9 +90,7 @@ export default async function ProtectedAdminLayout({
             {staff.fullName}
           </p>
           <p className="mt-1 text-xs text-zinc-600">
-            {staff.globalRole === "admin"
-              ? "Administrador"
-              : "Operador"}
+            {roleLabel}
           </p>
           <form action={signOut} className="mt-4">
             <button className="flex items-center gap-2 text-sm text-zinc-500 transition hover:text-white">
