@@ -78,13 +78,7 @@ export default async function Home() {
               </div>
             ) : null}
 
-            <a
-              href="#inscricao"
-              className="brand-glow mt-10 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-500"
-            >
-              Quero entrar para a Tropa de Elite
-              <ArrowRight className="size-5" />
-            </a>
+            
           </div>
 
           <aside id="inscricao" className="glass-panel rounded-[2rem] p-6 sm:p-8 lg:p-10">
