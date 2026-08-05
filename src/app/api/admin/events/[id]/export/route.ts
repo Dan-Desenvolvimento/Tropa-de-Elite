@@ -74,10 +74,10 @@ export async function GET(
     "Telefone",
     "Cidade",
     "Empresa",
-    "Cargo ou funÃ§Ã£o",
+    "Cargo ou função",
     "Status",
-    "Data da inscriÃ§Ã£o",
-    "PresenÃ§a",
+    "Data da inscrição",
+    "Presença",
     "HorÃ¡rio do check-in",
     "Respostas personalizadas",
   ];

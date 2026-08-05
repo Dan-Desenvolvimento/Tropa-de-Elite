@@ -10,38 +10,38 @@ const registrationBaseSchema = z.object({
     .string()
     .trim()
     .min(3, "Informe seu nome completo.")
-    .max(120, "O nome informado Ã© muito longo."),
+    .max(120, "O nome informado é muito longo."),
   email: z
     .string()
     .trim()
     .toLowerCase()
-    .email("Informe um e-mail vÃ¡lido.")
+    .email("Informe um e-mail válido.")
     .max(254),
   phone: z
     .string()
     .transform((value) => value.replace(/\D/g, ""))
-    .pipe(z.string().regex(brazilianPhone, "Informe um WhatsApp vÃ¡lido com DDD.")),
+    .pipe(z.string().regex(brazilianPhone, "Informe um WhatsApp válido com DDD.")),
   city: z
     .string()
     .trim()
     .min(2, "Informe sua cidade.")
-    .max(100, "O nome da cidade Ã© muito longo."),
+    .max(100, "O nome da cidade é muito longo."),
   companyName: z
     .string()
     .trim()
     .min(2, "Informe o nome da empresa.")
-    .max(160, "O nome da empresa Ã© muito longo."),
+    .max(160, "O nome da empresa é muito longo."),
   jobRole: z.enum(JOB_ROLE_VALUES, {
-    error: "Selecione seu cargo ou funÃ§Ã£o.",
+    error: "Selecione seu cargo ou função.",
   }),
   jobRoleOther: z
     .string()
     .trim()
-    .max(160, "A funÃ§Ã£o informada Ã© muito longa.")
+    .max(160, "A função informada é muito longa.")
     .default(""),
   privacyConsent: z
     .boolean()
-    .refine((accepted) => accepted, "VocÃª precisa aceitar a PolÃ­tica de Privacidade."),
+    .refine((accepted) => accepted, "Você precisa aceitar a Política de Privacidade."),
   communicationsConsent: z.boolean().default(false),
   customAnswers: z.record(z.string(), z.unknown()).default({}),
   website: z.string().max(0).optional().default(""),
@@ -53,7 +53,7 @@ export const registrationSchema = registrationBaseSchema.superRefine(
       context.addIssue({
         code: "custom",
         path: ["jobRoleOther"],
-        message: "Informe qual Ã© a sua funÃ§Ã£o.",
+        message: "Informe qual é a sua função.",
       });
     }
   },
@@ -70,25 +70,25 @@ export function createRegistrationSchema(customFields: EventCustomField[]) {
 
       if (field.type === "checkbox") {
         if (value !== undefined && typeof value !== "boolean") {
-          context.addIssue({ code: "custom", path, message: "Resposta invÃ¡lida." });
+          context.addIssue({ code: "custom", path, message: "Resposta inválida." });
         } else if (field.required && value !== true) {
-          context.addIssue({ code: "custom", path, message: "Este campo Ã© obrigatÃ³rio." });
+          context.addIssue({ code: "custom", path, message: "Este campo é obrigatório." });
         }
         continue;
       }
 
       if (value !== undefined && typeof value !== "string") {
-        context.addIssue({ code: "custom", path, message: "Resposta invÃ¡lida." });
+        context.addIssue({ code: "custom", path, message: "Resposta inválida." });
         continue;
       }
 
       const text = typeof value === "string" ? value.trim() : "";
       if (field.required && text.length === 0) {
-        context.addIssue({ code: "custom", path, message: "Este campo Ã© obrigatÃ³rio." });
+        context.addIssue({ code: "custom", path, message: "Este campo é obrigatório." });
       } else if (text.length > 500) {
-        context.addIssue({ code: "custom", path, message: "A resposta Ã© muito longa." });
+        context.addIssue({ code: "custom", path, message: "A resposta é muito longa." });
       } else if (field.type === "select" && text && !field.options.includes(text)) {
-        context.addIssue({ code: "custom", path, message: "Selecione uma opÃ§Ã£o vÃ¡lida." });
+        context.addIssue({ code: "custom", path, message: "Selecione uma opção válida." });
       }
     }
   });

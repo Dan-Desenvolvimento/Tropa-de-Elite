@@ -89,8 +89,8 @@ export default async function RegistrationsPage({
         title={event.name}
         description={`${total.toLocaleString("pt-BR")} ${
           total === 1
-            ? "inscriÃ§Ã£o encontrada"
-            : "inscriÃ§Ãµes encontradas"
+            ? "inscrição encontrada"
+            : "inscrições encontradas"
         }.`}
         actions={
           <>
@@ -138,7 +138,7 @@ export default async function RegistrationsPage({
           <select
             name="sort"
             defaultValue={sort}
-            aria-label="OrdenaÃ§Ã£o"
+            aria-label="Ordenação"
             className="h-11 rounded-xl border border-white/10 bg-[#111114] px-3 text-sm text-zinc-300"
           >
             <option value="newest">Mais recentes</option>
@@ -160,9 +160,9 @@ export default async function RegistrationsPage({
                 <th className="px-4 py-3">Contato</th>
                 <th className="px-4 py-3">Empresa e cargo</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">InscriÃ§Ã£o</th>
+                <th className="px-4 py-3">Inscrição</th>
                 <th className="px-4 py-3">Check-in</th>
-                <th className="px-4 py-3">AÃ§Ãµes</th>
+                <th className="px-4 py-3">Ações</th>
               </tr>
             </thead>
 
@@ -250,7 +250,7 @@ export default async function RegistrationsPage({
                     colSpan={7}
                     className="px-4 py-12 text-center text-zinc-600"
                   >
-                    Nenhuma inscriÃ§Ã£o encontrada.
+                    Nenhuma inscrição encontrada.
                   </td>
                 </tr>
               ) : null}

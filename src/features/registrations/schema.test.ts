@@ -39,7 +39,7 @@ const validRegistration = {
 };
 
 describe("registrationSchema", () => {
-  it("normaliza uma inscriÃ§Ã£o vÃ¡lida", () => {
+  it("normaliza uma inscrição vÃ¡lida", () => {
     const result = registrationSchema.parse(validRegistration);
     expect(result.email).toBe("maria@exemplo.com");
     expect(result.phone).toBe("77999998888");
@@ -71,7 +71,7 @@ describe("registrationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("exige a descriÃ§Ã£o quando o cargo Ã© Outros", () => {
+  it("exige a descrição quando o cargo é Outros", () => {
     const result = registrationSchema.safeParse({
       ...validRegistration,
       jobRole: "other",
@@ -80,7 +80,7 @@ describe("registrationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("aceita uma funÃ§Ã£o personalizada quando o cargo Ã© Outros", () => {
+  it("aceita uma função personalizada quando o cargo é Outros", () => {
     const result = registrationSchema.safeParse({
       ...validRegistration,
       jobRole: "other",
@@ -97,7 +97,7 @@ describe("registrationSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("valida campos personalizados obrigatÃ³rios e opÃ§Ãµes permitidas", () => {
+  it("valida campos personalizados obrigatórios e opções permitidas", () => {
     const schema = createRegistrationSchema(customFields);
     expect(
       schema.safeParse({ ...validRegistration, customAnswers: {} }).success,
@@ -122,7 +122,7 @@ describe("registrationSchema", () => {
     ).toBe(true);
   });
 
-  it("remove respostas que nÃ£o pertencem ao evento", () => {
+  it("remove respostas que não pertencem ao evento", () => {
     expect(
       pickCustomAnswers(customFields, {
         departamento: " Comercial ",

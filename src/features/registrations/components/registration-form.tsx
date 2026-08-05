@@ -90,7 +90,7 @@ export function RegistrationForm({
       router.push(`/eventos/${eventSlug}/confirmacao?${query.toString()}`);
     } catch {
       setServerError(
-        "NÃ£o foi possÃ­vel concluir sua inscriÃ§Ã£o agora. Tente novamente.",
+        "Não foi possível concluir sua inscrição agora. Tente novamente.",
       );
       setServerErrorCode("NETWORK_ERROR");
     }
@@ -170,7 +170,7 @@ export function RegistrationForm({
           />
         </Field>
 
-        <Field label="Cargo ou funÃ§Ã£o" error={errors.jobRole?.message}>
+        <Field label="Cargo ou função" error={errors.jobRole?.message}>
           <select
             className={inputClass}
             defaultValue=""
@@ -191,14 +191,14 @@ export function RegistrationForm({
 
       {selectedJobRole === "other" ? (
         <Field
-          label="Qual Ã© a sua funÃ§Ã£o?"
+          label="Qual a sua função?"
           error={errors.jobRoleOther?.message}
         >
           <textarea
             className={textareaClass}
             rows={3}
             maxLength={160}
-            placeholder="Digite seu cargo ou funÃ§Ã£o"
+            placeholder="Digite seu cargo ou função"
             {...register("jobRoleOther")}
           />
         </Field>
@@ -260,10 +260,10 @@ export function RegistrationForm({
                 rel="noopener noreferrer"
                 className="text-red-400 underline underline-offset-2"
               >
-                PolÃ­tica de Privacidade e ProteÃ§Ã£o de Dados (LGPD)
+                Política de Privacidade e Proteção de Dados (LGPD)
               </a>
             ) : (
-              "PolÃ­tica de Privacidade e ProteÃ§Ã£o de Dados (LGPD)"
+              "Política de Privacidade e Proteção de Dados (LGPD)"
             )}
             .
           </span>
@@ -280,7 +280,7 @@ export function RegistrationForm({
             className="mt-1 size-4 accent-red-600"
             {...register("communicationsConsent")}
           />
-          <span>Aceito receber comunicaÃ§Ãµes relacionadas a este evento.</span>
+          <span>Aceito receber comunicações relacionadas a este evento.</span>
         </label>
       </div>
 
@@ -309,10 +309,10 @@ export function RegistrationForm({
         {isSubmitting ? (
           <>
             <LoaderCircle className="size-5 animate-spin" /> Processando
-            inscriÃ§Ã£o
+            inscrição
           </>
         ) : disabled ? (
-          "InscriÃ§Ãµes indisponÃ­veis"
+          "Inscrições indisponíveis"
         ) : (
           <>
             Garantir minha vaga <ArrowRight className="size-5" />
@@ -322,7 +322,7 @@ export function RegistrationForm({
 
       <p className="flex items-center justify-center gap-2 text-center text-xs text-zinc-500">
         <CheckCircle2 className="size-4 text-emerald-500" /> Seus dados sÃ£o
-        usados somente para a organizaÃ§Ã£o do evento.
+        usados somente para a organização do evento.
       </p>
     </form>
   );

@@ -28,13 +28,13 @@ type RegistrationRpcResult = {
 
 const publicMessages: Record<string, string> = {
   DUPLICATE_REGISTRATION:
-    "JÃ¡ existe uma inscriÃ§Ã£o vinculada a esses dados. VocÃª pode solicitar o reenvio do ingresso.",
+    "Já existe uma inscrição vinculada a esses dados. Você pode solicitar o reenvio do ingresso.",
   EVENT_SOLD_OUT: "As vagas deste evento foram preenchidas.",
-  REGISTRATION_CLOSED: "As inscriÃ§Ãµes para este evento nÃ£o estÃ£o abertas.",
+  REGISTRATION_CLOSED: "As inscrições para este evento não estão abertas.",
   PRIVACY_CONSENT_REQUIRED:
-    "Ã‰ necessÃ¡rio aceitar a PolÃ­tica de Privacidade.",
+    "É necessário aceitar a Política de Privacidade.",
   COMPANY_REQUIRED: "Informe o nome da empresa.",
-  INVALID_JOB_ROLE: "Informe um cargo ou funÃ§Ã£o vÃ¡lido.",
+  INVALID_JOB_ROLE: "Informe um cargo ou função válido.",
 };
 
 export async function POST(
@@ -63,7 +63,7 @@ export async function POST(
         {
           success: false,
           code: "INVALID_REQUEST",
-          message: "NÃ£o foi possÃ­vel processar a solicitaÃ§Ã£o.",
+          message: "Não foi possível processar a solicitação.",
         },
         { status: 400 },
       );
@@ -81,7 +81,7 @@ export async function POST(
           success: false,
           code: "SERVER_CONFIGURATION_ERROR",
           message:
-            "O sistema de inscriÃ§Ãµes estÃ¡ temporariamente indisponÃ­vel. A configuraÃ§Ã£o do servidor precisa ser concluÃ­da.",
+            "O sistema de inscrições está temporariamente indisponível. A configuração do servidor precisa ser concluída.",
         },
         { status: 503 },
       );
@@ -110,7 +110,7 @@ export async function POST(
           success: false,
           code: "RATE_LIMIT_CONFIGURATION_ERROR",
           message:
-            "O sistema de inscriÃ§Ãµes ainda nÃ£o estÃ¡ totalmente configurado. Verifique as migrations do Supabase.",
+            "O sistema de inscrições ainda nÃ£o estÃ¡ totalmente configurado. Verifique as migrations do Supabase.",
         },
         { status: 503 },
       );
@@ -220,7 +220,7 @@ export async function POST(
           code,
           message:
             publicMessages[code] ??
-            "NÃ£o foi possÃ­vel concluir a inscriÃ§Ã£o.",
+            "NÃ£o foi possÃ­vel concluir a inscrição.",
         },
         {
           status:
@@ -271,7 +271,7 @@ export async function POST(
         success: false,
         code: "INTERNAL_ERROR",
         message:
-          "NÃ£o foi possÃ­vel concluir sua inscriÃ§Ã£o agora. Tente novamente.",
+          "NÃ£o foi possÃ­vel concluir sua inscrição agora. Tente novamente.",
       },
       { status: 500 },
     );

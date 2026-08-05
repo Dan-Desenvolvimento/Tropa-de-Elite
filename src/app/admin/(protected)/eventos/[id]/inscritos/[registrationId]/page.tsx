@@ -107,7 +107,7 @@ export default async function RegistrationDetailPage({
       />
 
       <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-2 lg:p-10">
-        <Section title="Dados da inscriÃ§Ã£o">
+        <Section title="Dados da inscrição">
           <Row label="E-mail" value={registration.email} />
           <Row label="Telefone" value={registration.phone} />
           <Row label="Cidade" value={registration.city} />
@@ -116,7 +116,7 @@ export default async function RegistrationDetailPage({
             value={registration.company_name ?? "NÃ£o informado"}
           />
           <Row
-            label="Cargo ou funÃ§Ã£o"
+            label="Cargo ou função"
             value={formatJobRole(
               registration.job_role,
               registration.job_role_other,
@@ -124,7 +124,7 @@ export default async function RegistrationDetailPage({
           />
           <Row label="Status" value={registration.status} />
           <Row
-            label="InscriÃ§Ã£o"
+            label="Inscrição"
             value={formatDateTime(
               registration.registered_at,
               event.timezone,
@@ -156,7 +156,7 @@ export default async function RegistrationDetailPage({
             value={registration.privacy_policy_version}
           />
           <Row
-            label="ComunicaÃ§Ãµes"
+            label="Comunicações"
             value={
               registration.communications_consent
                 ? "Aceito"
