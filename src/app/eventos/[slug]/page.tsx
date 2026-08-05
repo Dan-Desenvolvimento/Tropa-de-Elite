@@ -121,7 +121,7 @@ export default async function EventPage({ params }: PageProps<"/eventos/[slug]">
 
           <RegistrationForm
             eventSlug={event.slug}
-            privacyPolicyUrl={event.privacyPolicyUrl}
+            privacyPolicyUrl={event.privacyPolicyUrl ?? "/politica-de-privacidade"}
             customFields={event.customFields}
             disabled={!registrationOpen}
           />
