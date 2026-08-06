@@ -1,7 +1,8 @@
-import { ArrowRight, CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
+import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 
 import { getFeaturedPublicEvent } from "@/features/events/server/get-public-event";
+import { EventCapacityIndicator } from "@/features/events/components/event-capacity-indicator";
 import { RegistrationForm } from "@/features/registrations/components/registration-form";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,15 @@ export default async function Home() {
                   : "Nenhum evento está recebendo inscrições neste momento."}
               </p>
             </div>
+            {event && event.showRemainingSlots &&
+            event.capacity !== null &&
+            event.remainingSlots !== null ? (
+              <EventCapacityIndicator
+                eventSlug={event.slug}
+                capacity={event.capacity}
+                remainingSlots={event.remainingSlots}
+              />
+            ) : null}
             {event ? (
               <RegistrationForm
                 eventSlug={event.slug}

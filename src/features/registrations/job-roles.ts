@@ -10,6 +10,20 @@ export const JOB_ROLE_VALUES = [
 
 export type JobRole = (typeof JOB_ROLE_VALUES)[number];
 
+const POTENTIAL_BUSINESS_OWNER_ROLES = new Set<JobRole>([
+  "owner",
+  "ceo",
+  "director",
+]);
+
+export function isPotentialBusinessOwner(
+  jobRole: string | null | undefined,
+) {
+  return jobRole
+    ? POTENTIAL_BUSINESS_OWNER_ROLES.has(jobRole as JobRole)
+    : false;
+}
+
 export const JOB_ROLE_OPTIONS: ReadonlyArray<{
   value: JobRole;
   label: string;

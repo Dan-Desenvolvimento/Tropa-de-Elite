@@ -122,6 +122,24 @@ describe("registrationSchema", () => {
     ).toBe(true);
   });
 
+  it("ignora campos personalizados para perfis que não são potenciais empresários", () => {
+    const schema = createRegistrationSchema(customFields);
+    expect(
+      schema.safeParse({
+        ...validRegistration,
+        jobRole: "manager",
+        customAnswers: {},
+      }).success,
+    ).toBe(true);
+    expect(
+      pickCustomAnswers(
+        customFields,
+        { departamento: "Comercial", termos_extras: true },
+        false,
+      ),
+    ).toEqual({});
+  });
+
   it("remove respostas que não pertencem ao evento", () => {
     expect(
       pickCustomAnswers(customFields, {

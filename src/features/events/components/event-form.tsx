@@ -66,7 +66,7 @@ export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
       city: String(data.get("city") ?? ""),
       capacity: capacityValue ? Number(capacityValue) : null,
       waitlistEnabled: data.get("waitlistEnabled") === "on",
-      showRemainingSlots: data.get("showRemainingSlots") === "on",
+      showRemainingSlots: data.get("showRemainingSlots") === "active",
       whatsappGroupUrl: nullableText("whatsappGroupUrl"),
       registrationStatus: String(data.get("registrationStatus") ?? "draft"),
       registrationOpenAt: nullableDate("registrationOpenAt"),
@@ -141,7 +141,12 @@ export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
         </div>
         <div className="flex flex-wrap gap-5 text-sm text-zinc-400">
           <Check name="waitlistEnabled" defaultChecked={initial.waitlistEnabled}>Ativar lista de espera</Check>
-          <Check name="showRemainingSlots" defaultChecked={initial.showRemainingSlots}>Ativar urgência com vagas restantes e barra de ocupação</Check>
+          <Field label="Contador de vagas no formulário">
+            <select name="showRemainingSlots" defaultValue={initial.showRemainingSlots ? "active" : "inactive"} className={inputClass}>
+              <option value="active">Ativo — mostrar vagas e percentual</option>
+              <option value="inactive">Desativado — ocultar contador</option>
+            </select>
+          </Field>
           <Check name="requireCheckinConfirmation" defaultChecked={initial.requireCheckinConfirmation ?? true}>Exigir confirmação no check-in</Check>
         </div>
       </FormSection>

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import type { EventCustomField } from "@/features/events/types";
 import { JOB_ROLE_OPTIONS } from "@/features/registrations/job-roles";
@@ -14,6 +14,10 @@ import {
   type RegistrationInput,
   type ValidatedRegistration,
 } from "@/features/registrations/schema";
+import {
+  isPotentialBusinessOwner,
+  type JobRole,
+} from "@/features/registrations/job-roles";
 
 type RegistrationFormProps = {
   eventSlug: string;
@@ -42,7 +46,7 @@ export function RegistrationForm({
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegistrationInput, unknown, ValidatedRegistration>({
     resolver: zodResolver(createRegistrationSchema(customFields)),
@@ -60,7 +64,25 @@ export function RegistrationForm({
     },
   });
 
-  const selectedJobRole = watch("jobRole");
+  const selectedJobRole = useWatch({
+    control,
+    name: "jobRole",
+  });
+  const showCustomFields = isPotentialBusinessOwner(selectedJobRole);
+
+  function handleJobRoleChange(value: string) {
+    const jobRole = value as JobRole;
+    setValue("jobRole", jobRole, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    if (!isPotentialBusinessOwner(jobRole)) {
+      setValue("customAnswers", {}, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }
 
   async function onSubmit(input: ValidatedRegistration) {
     setServerError(null);
@@ -175,7 +197,10 @@ export function RegistrationForm({
             className={inputClass}
             defaultValue=""
             autoComplete="organization-title"
-            {...register("jobRole")}
+            {...register("jobRole", {
+              onChange: (event) =>
+                handleJobRoleChange(event.target.value),
+            })}
           >
             <option value="" disabled>
               Selecione
@@ -204,7 +229,7 @@ export function RegistrationForm({
         </Field>
       ) : null}
 
-      {customFields.map((field) => {
+      {showCustomFields && customFields.map((field) => {
         const fieldError = errors.customAnswers?.[field.id]?.message;
         return (
           <Field

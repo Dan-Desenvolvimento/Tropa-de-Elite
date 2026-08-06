@@ -85,11 +85,13 @@ export async function getPublicEvent(slug: string): Promise<PublicEvent | null> 
 
 export async function getFeaturedPublicEvent(): Promise<PublicEvent | null> {
   const supabase = createAdminClient();
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from("events")
     .select("slug")
     .eq("registration_status", "open")
-    .or(`registration_close_at.is.null,registration_close_at.gte.${new Date().toISOString()}`)
+    .or(`registration_open_at.is.null,registration_open_at.lte.${now}`)
+    .or(`registration_close_at.is.null,registration_close_at.gte.${now}`)
     .order("start_at", { ascending: true })
     .limit(1)
     .maybeSingle<{ slug: string }>();

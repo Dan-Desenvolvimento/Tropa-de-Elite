@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import type { EventCustomField } from "@/features/events/types";
-import { JOB_ROLE_VALUES } from "@/features/registrations/job-roles";
+import {
+  isPotentialBusinessOwner,
+  JOB_ROLE_VALUES,
+} from "@/features/registrations/job-roles";
 
 const brazilianPhone = /^\d{10,11}$/;
 
@@ -64,6 +67,8 @@ export type ValidatedRegistration = z.output<typeof registrationSchema>;
 
 export function createRegistrationSchema(customFields: EventCustomField[]) {
   return registrationSchema.superRefine((data, context) => {
+    if (!isPotentialBusinessOwner(data.jobRole)) return;
+
     for (const field of customFields) {
       const value = data.customAnswers[field.id];
       const path = ["customAnswers", field.id];
@@ -97,7 +102,10 @@ export function createRegistrationSchema(customFields: EventCustomField[]) {
 export function pickCustomAnswers(
   customFields: EventCustomField[],
   answers: Record<string, unknown>,
+  includeCustomFields = true,
 ) {
+  if (!includeCustomFields) return {};
+
   return Object.fromEntries(
     customFields.map((field) => {
       const value = answers[field.id];

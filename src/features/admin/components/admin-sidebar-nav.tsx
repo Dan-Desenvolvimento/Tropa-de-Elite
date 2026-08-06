@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type SidebarEvent = {
   id: string;
@@ -58,29 +58,15 @@ export function AdminSidebarNav({
       ? pathEventId
       : events[0]?.id ?? "";
 
-  const [selectedEventId, setSelectedEventId] =
+  const [manualSelectedEventId, setManualSelectedEventId] =
     useState(defaultEventId);
-
-  useEffect(() => {
-    if (
-      pathEventId &&
-      events.some((event) => event.id === pathEventId)
-    ) {
-      setSelectedEventId(pathEventId);
-      return;
-    }
-
-    if (
-      selectedEventId &&
-      events.some(
-        (event) => event.id === selectedEventId,
-      )
-    ) {
-      return;
-    }
-
-    setSelectedEventId(events[0]?.id ?? "");
-  }, [events, pathEventId, selectedEventId]);
+  const selectedEventId =
+    pathEventId && events.some((event) => event.id === pathEventId)
+      ? pathEventId
+      : manualSelectedEventId &&
+          events.some((event) => event.id === manualSelectedEventId)
+        ? manualSelectedEventId
+        : events[0]?.id ?? "";
 
   const selectedEvent =
     events.find(
@@ -153,7 +139,7 @@ export function AdminSidebarNav({
   }
 
   function selectEvent(eventId: string) {
-    setSelectedEventId(eventId);
+    setManualSelectedEventId(eventId);
 
     const event = events.find(
       (item) => item.id === eventId,

@@ -7,6 +7,7 @@ import {
   pickCustomAnswers,
   registrationSchema,
 } from "@/features/registrations/schema";
+import { isPotentialBusinessOwner } from "@/features/registrations/job-roles";
 import type { ApiResult } from "@/lib/api-result";
 import { getRequestIp, hashRequestIdentifier } from "@/lib/security/request";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -196,6 +197,7 @@ export async function POST(
         answers: pickCustomAnswers(
           customFields,
           validated.data.customAnswers,
+          isPotentialBusinessOwner(validated.data.jobRole),
         ),
         accepted_privacy: validated.data.privacyConsent,
         accepted_communications:
