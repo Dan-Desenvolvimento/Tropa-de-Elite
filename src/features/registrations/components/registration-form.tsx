@@ -203,7 +203,7 @@ export function RegistrationForm({
             })}
           >
             <option value="" disabled>
-              Selecione
+              Cargo na empresa
             </option>
             {JOB_ROLE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -236,6 +236,7 @@ export function RegistrationForm({
             key={field.id}
             label={`${field.label}${field.required ? " *" : ""}`}
             error={typeof fieldError === "string" ? fieldError : undefined}
+            hideLabel={false}
           >
             {field.type === "select" ? (
               <select
@@ -244,7 +245,7 @@ export function RegistrationForm({
                 {...register(`customAnswers.${field.id}`)}
               >
                 <option value="" disabled>
-                  Selecione
+                  {field.label}
                 </option>
                 {field.options.map((option) => (
                   <option key={option} value={option}>
@@ -359,14 +360,16 @@ function Field({
   label,
   error,
   children,
+  hideLabel = true,
 }: {
   label: string;
   error?: string;
   children: React.ReactNode;
+  hideLabel?: boolean;
 }) {
   return (
     <label className="block text-sm font-medium text-zinc-300">
-      <span className="sr-only">{label}</span>
+      <span className={hideLabel ? "sr-only" : "mb-2 block"}>{label}</span>
       {children}
       {error ? (
         <span className="mt-1.5 block text-xs text-red-400">{error}</span>
