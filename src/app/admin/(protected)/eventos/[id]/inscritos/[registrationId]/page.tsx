@@ -254,7 +254,7 @@ export default async function RegistrationDetailPage({
                   <div className="flex justify-between gap-3">
                     <span
                       className={
-                        email.status === "sent"
+                        email.status === "Enviado"
                           ? "text-emerald-400"
                           : email.status === "failed"
                             ? "text-red-400"

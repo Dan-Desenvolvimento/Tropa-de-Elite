@@ -128,7 +128,7 @@ export async function sendTicketConfirmation(registrationId: string) {
     await supabase
       .from("email_logs")
       .update({
-        status: "sent",
+        status: "Enviado",
         provider_message_id: data?.id ?? null,
         sent_at: new Date().toISOString(),
         error_message: null,
