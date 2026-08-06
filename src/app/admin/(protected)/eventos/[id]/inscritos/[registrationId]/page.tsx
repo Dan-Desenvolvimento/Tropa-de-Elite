@@ -256,7 +256,7 @@ export default async function RegistrationDetailPage({
                       className={
                         email.status === "Enviado"
                           ? "text-emerald-400"
-                          : email.status === "failed"
+                          : email.status === "Falhou"
                             ? "text-red-400"
                             : "text-amber-400"
                       }
@@ -339,8 +339,20 @@ function ExtraAnswers({
     return <Empty />;
   }
 
-  const employees = findAnswer(entries, ["colaborador", "funcionário", "funcionario"]);
-  const pain = findAnswer(entries, ["maior dor", "dor"]);
+  const employees = findAnswer(entries, [
+    "quantos colaboradores",
+    "número de colaboradores",
+    "numero de colaboradores",
+    "quantidade de colaboradores",
+    "funcionários",
+    "funcionarios",
+  ]);
+  const pain = findAnswer(entries, [
+    "maior dificuldade",
+    "dificuldade da sua empresa",
+    "principal dificuldade",
+    "maior dor",
+  ]);
 
   return (
     <div className="space-y-4 text-sm leading-6 text-zinc-300">
