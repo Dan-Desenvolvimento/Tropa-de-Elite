@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
+import { eventCustomFieldSchema } from "@/features/events/admin-schema";
 import { formatJobRole } from "@/features/registrations/job-roles";
 import { getEventPermissionSet } from "@/lib/auth/dal";
 import { formatDateTime } from "@/lib/date-time";
@@ -80,14 +81,15 @@ export default async function RegistrationDetailPage({
       .eq("id", registrationId)
       .eq("event_id", id)
       .maybeSingle<RegistrationDetail>(),
-    supabase
-      .from("events")
-      .select("name,timezone")
-      .eq("id", id)
-      .maybeSingle<{
-        name: string;
-        timezone: string;
-      }>(),
+      supabase
+        .from("events")
+        .select("name,timezone,custom_fields")
+        .eq("id", id)
+        .maybeSingle<{
+          name: string;
+          timezone: string;
+          custom_fields: unknown;
+        }>(),
     supabase
       .from("email_logs")
       .select(
@@ -228,14 +230,14 @@ export default async function RegistrationDetailPage({
           ) : null}
         </Section>
 
-        <Section title="Respostas personalizadas">
-          <pre className="overflow-auto whitespace-pre-wrap text-xs leading-6 text-zinc-400">
-            {JSON.stringify(
-              registration.custom_answers ?? {},
-              null,
-              2,
-            )}
-          </pre>
+        <Section title="Respostas Extras">
+          <ExtraAnswers
+            fullName={registration.full_name}
+            customFields={eventCustomFieldSchema.array().safeParse(event.custom_fields).success
+              ? eventCustomFieldSchema.array().parse(event.custom_fields)
+              : []}
+            answers={registration.custom_answers ?? {}}
+          />
         </Section>
 
         <Section title="Histórico de e-mails">
@@ -309,6 +311,74 @@ export default async function RegistrationDetailPage({
       </div>
     </main>
   );
+}
+
+function ExtraAnswers({
+  fullName,
+  customFields,
+  answers,
+}: {
+  fullName: string;
+  customFields: Array<{
+    id: string;
+    label: string;
+    type: "text" | "select" | "checkbox";
+    required: boolean;
+    options: string[];
+  }>;
+  answers: Record<string, unknown>;
+}) {
+  const entries = customFields
+    .map((field) => ({
+      field,
+      value: answers[field.id],
+    }))
+    .filter(({ value }) => value !== undefined && value !== null && value !== "");
+
+  if (entries.length === 0) {
+    return <Empty />;
+  }
+
+  const employees = findAnswer(entries, ["colaborador", "funcionário", "funcionario"]);
+  const pain = findAnswer(entries, ["maior dor", "dor"]);
+
+  return (
+    <div className="space-y-4 text-sm leading-6 text-zinc-300">
+      {employees && pain ? (
+        <p className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+          O empresário <strong className="text-white">{fullName}</strong> tem{" "}
+          <strong className="text-white">{String(employees.value)}</strong> colaboradores e a maior dor dele é{" "}
+          <strong className="text-white">{String(pain.value)}</strong>.
+        </p>
+      ) : null}
+
+      <div className="space-y-3">
+        {entries.map(({ field, value }) => (
+          <Row
+            key={field.id}
+            label={field.label}
+            value={formatExtraAnswer(value)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function findAnswer(
+  entries: Array<{ field: { label: string }; value: unknown }>,
+  terms: string[],
+) {
+  return entries.find(({ field }) => {
+    const label = field.label.toLocaleLowerCase("pt-BR");
+    return terms.some((term) => label.includes(term));
+  });
+}
+
+function formatExtraAnswer(value: unknown) {
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
+  if (Array.isArray(value)) return value.join(", ");
+  return String(value);
 }
 
 function Section({
