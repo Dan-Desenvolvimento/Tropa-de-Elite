@@ -8,6 +8,7 @@ import {
 
 import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
+import { isPotentialBusinessOwner } from "@/features/checkin/strategic-profile";
 import { formatJobRole } from "@/features/registrations/job-roles";
 import { getEventPermissionSet } from "@/lib/auth/dal";
 import { formatDateTime } from "@/lib/date-time";
@@ -180,7 +181,7 @@ export default async function RegistrationsPage({
             <input
               name="q"
               defaultValue={q}
-              placeholder="Nome, empresa, e-mail, telefone ou código"
+              placeholder="Nome, empresa, empresário, e-mail, telefone ou código"
               className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-3 text-sm text-white outline-none focus:border-red-500/60"
             />
           </div>
@@ -288,12 +289,19 @@ export default async function RegistrationsPage({
                       {row.company_name ??
                         "Não informado"}
                     </p>
-                    <p className="mt-1 text-xs text-zinc-600">
-                      {formatJobRole(
-                        row.job_role,
-                        row.job_role_other,
-                      )}
-                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <p className="text-xs text-zinc-600">
+                        {formatJobRole(
+                          row.job_role,
+                          row.job_role_other,
+                        )}
+                      </p>
+                      {isPotentialBusinessOwner(row.job_role) ? (
+                        <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-300">
+                          E1 · Potencial empresário
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
 
                   <td className="px-4 py-4">

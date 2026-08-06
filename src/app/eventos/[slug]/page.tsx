@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { CalendarDays, Clock3, MapPin, ShieldCheck, TicketCheck } from "lucide-react";
+import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
 
+import { EventCapacityIndicator } from "@/features/events/components/event-capacity-indicator";
 import { getPublicEvent } from "@/features/events/server/get-public-event";
 import { RegistrationForm } from "@/features/registrations/components/registration-form";
 
@@ -100,13 +101,6 @@ export default async function EventPage({ params }: PageProps<"/eventos/[slug]">
             <Detail icon={MapPin}>
               {event.venueName} · {event.address} · {event.city}
             </Detail>
-            {event.showRemainingSlots && event.remainingSlots !== null ? (
-              <Detail icon={TicketCheck}>
-                {event.remainingSlots > 0
-                  ? `${event.remainingSlots} vaga${event.remainingSlots === 1 ? " disponível" : "s disponíveis"}`
-                  : "Vagas regulares preenchidas"}
-              </Detail>
-            ) : null}
           </div>
         </div>
 
@@ -118,6 +112,16 @@ export default async function EventPage({ params }: PageProps<"/eventos/[slug]">
             </h2>
             <p className="mt-3 text-sm leading-6 text-zinc-400">{statusMessage}</p>
           </div>
+
+          {event.showRemainingSlots &&
+          event.capacity !== null &&
+          event.remainingSlots !== null ? (
+            <EventCapacityIndicator
+              eventSlug={event.slug}
+              capacity={event.capacity}
+              remainingSlots={event.remainingSlots}
+            />
+          ) : null}
 
           <RegistrationForm
             eventSlug={event.slug}

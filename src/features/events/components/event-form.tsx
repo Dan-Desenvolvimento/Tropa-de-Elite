@@ -141,7 +141,7 @@ export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
         </div>
         <div className="flex flex-wrap gap-5 text-sm text-zinc-400">
           <Check name="waitlistEnabled" defaultChecked={initial.waitlistEnabled}>Ativar lista de espera</Check>
-          <Check name="showRemainingSlots" defaultChecked={initial.showRemainingSlots}>Mostrar vagas restantes</Check>
+          <Check name="showRemainingSlots" defaultChecked={initial.showRemainingSlots}>Ativar urgência com vagas restantes e barra de ocupação</Check>
           <Check name="requireCheckinConfirmation" defaultChecked={initial.requireCheckinConfirmation ?? true}>Exigir confirmação no check-in</Check>
         </div>
       </FormSection>
