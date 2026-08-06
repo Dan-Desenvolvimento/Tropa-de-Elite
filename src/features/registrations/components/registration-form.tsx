@@ -119,9 +119,9 @@ export function RegistrationForm({
   }
 
   const inputClass =
-    "mt-2 h-12 w-full rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500/70 focus:ring-2 focus:ring-red-500/15";
+    "h-12 w-full rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500/70 focus:ring-2 focus:ring-red-500/15";
   const textareaClass =
-    "mt-2 min-h-24 w-full resize-y rounded-xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500/70 focus:ring-2 focus:ring-red-500/15";
+    "min-h-24 w-full resize-y rounded-xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500/70 focus:ring-2 focus:ring-red-500/15";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
@@ -262,6 +262,8 @@ export function RegistrationForm({
               <input
                 className={inputClass}
                 maxLength={500}
+                placeholder={field.label}
+                aria-label={field.label}
                 {...register(`customAnswers.${field.id}`)}
               />
             )}
@@ -364,7 +366,7 @@ function Field({
 }) {
   return (
     <label className="block text-sm font-medium text-zinc-300">
-      {label}
+      <span className="sr-only">{label}</span>
       {children}
       {error ? (
         <span className="mt-1.5 block text-xs text-red-400">{error}</span>
