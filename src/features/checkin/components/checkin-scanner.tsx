@@ -195,8 +195,8 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
     : toneClass;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-      <div className="space-y-6">
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="min-w-0 space-y-6">
         <div className="overflow-hidden rounded-2xl border border-white/8 bg-black">
           <div className="relative aspect-[4/3] bg-[radial-gradient(circle_at_center,rgba(225,22,32,.12),transparent_65%)] sm:aspect-video">
             <video ref={videoRef} muted playsInline className={`h-full w-full object-cover ${cameraActive ? "block" : "hidden"}`} />
@@ -206,10 +206,10 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
               </div>
             ) : <div className="pointer-events-none absolute inset-1/2 size-[min(14rem,70vw)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border-2 border-red-500/70 shadow-[0_0_0_999px_rgba(0,0,0,.28)]" />}
           </div>
-          <div className="flex flex-wrap gap-3 border-t border-white/8 p-4">
-            <button onClick={() => void startCamera()} disabled={!online || pending} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white disabled:bg-zinc-800"><Camera className="size-4" />{cameraActive ? "Reiniciar câmera" : "Abrir câmera"}</button>
-            <button onClick={toggleTorch} disabled={!cameraActive || !torchAvailable} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/10 px-4 text-sm text-zinc-300 disabled:text-zinc-700"><Flashlight className="size-4" />Lanterna</button>
-            {cameras.length > 1 ? <select aria-label="Selecionar câmera" value={selectedCamera} onChange={(event) => { const id = event.target.value; controlsRef.current?.stop(); setSelectedCamera(id); void startCamera(id); }} className="min-h-12 rounded-xl border border-white/10 bg-zinc-950 px-3 text-sm text-zinc-300">{cameras.map((camera) => <option key={camera.id} value={camera.id}>{camera.label}</option>)}</select> : null}
+          <div className="flex flex-col gap-3 border-t border-white/8 p-4 sm:flex-row sm:flex-wrap">
+            <button onClick={() => void startCamera()} disabled={!online || pending} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white disabled:bg-zinc-800 sm:w-auto sm:flex-1"><Camera className="size-4" />{cameraActive ? "Reiniciar câmera" : "Abrir câmera"}</button>
+            <button onClick={toggleTorch} disabled={!cameraActive || !torchAvailable} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-4 text-sm text-zinc-300 disabled:text-zinc-700 sm:w-auto"><Flashlight className="size-4" />Lanterna</button>
+            {cameras.length > 1 ? <select aria-label="Selecionar câmera" value={selectedCamera} onChange={(event) => { const id = event.target.value; controlsRef.current?.stop(); setSelectedCamera(id); void startCamera(id); }} className="min-h-12 w-full max-w-full rounded-xl border border-white/10 bg-zinc-950 px-3 text-sm text-zinc-300 sm:w-auto">{cameras.map((camera) => <option key={camera.id} value={camera.id}>{camera.label}</option>)}</select> : null}
           </div>
         </div>
 
@@ -218,9 +218,9 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
 
         <section className="rounded-2xl border border-white/8 bg-white/[0.025] p-5">
           <h2 className="flex items-center gap-2 font-semibold text-white"><Keyboard className="size-4 text-red-500" />Código manual</h2>
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <input value={manualCode} onChange={(event) => setManualCode(event.target.value.toUpperCase())} placeholder="TDE-8F4K2D" className="h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 text-sm text-white outline-none focus:border-red-500/60" />
-            <button onClick={() => void lookupTicket(manualCode)} disabled={!online || manualCode.length < 3} className="rounded-xl bg-white/10 px-5 text-sm font-bold text-white disabled:text-zinc-700">Localizar</button>
+            <button onClick={() => void lookupTicket(manualCode)} disabled={!online || manualCode.length < 3} className="min-h-12 w-full rounded-xl bg-white/10 px-5 text-sm font-bold text-white disabled:text-zinc-700 sm:w-auto">Localizar</button>
           </div>
         </section>
 
@@ -228,13 +228,13 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
           <h2 className="flex items-center gap-2 font-semibold text-white"><Search className="size-4 text-red-500" />Busca por participante</h2>
           <div className="mt-4 flex gap-2">
             <input value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void searchPeople(); }} placeholder="Nome, e-mail, telefone ou código" className="h-12 min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 text-sm text-white outline-none focus:border-red-500/60" />
-            <button onClick={searchPeople} className="rounded-xl bg-white/10 px-5 text-sm font-bold text-white">Buscar</button>
+            <button onClick={searchPeople} className="min-h-12 w-full rounded-xl bg-white/10 px-5 text-sm font-bold text-white sm:w-auto">Buscar</button>
           </div>
           {searchResults.length > 0 ? <div className="mt-4 divide-y divide-white/8 rounded-xl border border-white/8">{searchResults.map((person) => <button key={person.registration_id} onClick={() => void lookupTicket(person.ticket_code)} className="flex w-full items-center justify-between gap-4 p-4 text-left hover:bg-white/5"><div><p className="text-sm font-medium text-white">{person.full_name}</p><p className="mt-1 text-xs text-zinc-600">{person.masked_email} · {person.masked_phone}</p></div><span className="font-mono text-xs text-red-400">{person.ticket_code}</span></button>)}</div> : null}
         </section>
       </div>
 
-      <aside className="space-y-6">
+      <aside className="min-w-0 space-y-6">
         <div className="rounded-2xl border border-white/8 bg-white/[0.025] p-5">
           <div className="flex items-center justify-between"><p className="text-sm text-zinc-500">Conexão</p><span className={`flex items-center gap-2 text-xs font-medium ${online ? "text-emerald-400" : "text-red-400"}`}>{online ? <Wifi className="size-4" /> : <WifiOff className="size-4" />}{online ? "Online" : "Offline"}</span></div>
           <p className="mt-5 text-4xl font-semibold text-white">{checkinCount.toLocaleString("pt-BR")}</p><p className="mt-1 text-sm text-zinc-600">check-ins realizados</p>
