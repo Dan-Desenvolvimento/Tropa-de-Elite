@@ -204,7 +204,7 @@ export function CheckinScanner({ eventId, initialCount, canOverrideWaitlist }: {
               <div className="absolute inset-0 grid place-items-center p-6 text-center">
                 <div><Camera className="mx-auto size-10 text-zinc-700" /><p className="mt-4 text-sm text-zinc-500">Abra a câmera para ler o QR Code.</p></div>
               </div>
-            ) : <div className="pointer-events-none absolute inset-1/2 size-56 -translate-x-1/2 -translate-y-1/2 rounded-3xl border-2 border-red-500/70 shadow-[0_0_0_999px_rgba(0,0,0,.28)]" />}
+            ) : <div className="pointer-events-none absolute inset-1/2 size-[min(14rem,70vw)] -translate-x-1/2 -translate-y-1/2 rounded-3xl border-2 border-red-500/70 shadow-[0_0_0_999px_rgba(0,0,0,.28)]" />}
           </div>
           <div className="flex flex-wrap gap-3 border-t border-white/8 p-4">
             <button onClick={() => void startCamera()} disabled={!online || pending} className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white disabled:bg-zinc-800"><Camera className="size-4" />{cameraActive ? "Reiniciar câmera" : "Abrir câmera"}</button>
