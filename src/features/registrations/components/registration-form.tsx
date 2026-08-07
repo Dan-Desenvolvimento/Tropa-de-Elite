@@ -331,6 +331,7 @@ export function RegistrationForm({
 
       <button
         type="submit"
+        data-track="registration_submit"
         disabled={disabled || isSubmitting}
         className="brand-glow flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-red-600 px-6 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
       >

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getFeaturedPublicEvent } from "@/features/events/server/get-public-event";
 import { EventCapacityIndicator } from "@/features/events/components/event-capacity-indicator";
 import { RegistrationForm } from "@/features/registrations/components/registration-form";
+import { TrackingBeacon } from "@/features/tracking/components/tracking-beacon";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function Home() {
     : [];
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-[#050506]">
+      <TrackingBeacon source="form" eventId={event?.id} />
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-[-18rem] h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-red-700/20 blur-[130px]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />

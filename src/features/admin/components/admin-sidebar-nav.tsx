@@ -7,6 +7,7 @@ import {
   KeyRound,
   LayoutDashboard,
   ScanLine,
+  Settings,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -265,6 +266,15 @@ export function AdminSidebarNav({
         >
           Minha senha
         </SidebarLink>
+        {isOwner ? (
+          <SidebarLink
+            href="/admin/configuracoes"
+            icon={Settings}
+            active={pathname.startsWith("/admin/configuracoes")}
+          >
+            Configurações
+          </SidebarLink>
+        ) : null}
       </nav>
 
       {isOwner || canCreateEvents ? (

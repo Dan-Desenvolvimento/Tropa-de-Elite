@@ -6,6 +6,7 @@ import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
 import { EventCapacityIndicator } from "@/features/events/components/event-capacity-indicator";
 import { getPublicEvent } from "@/features/events/server/get-public-event";
 import { RegistrationForm } from "@/features/registrations/components/registration-form";
+import { TrackingBeacon } from "@/features/tracking/components/tracking-beacon";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,7 @@ export default async function EventPage({ params }: PageProps<"/eventos/[slug]">
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-[#050506]">
+      <TrackingBeacon source="form" eventId={event.id} />
       <div className="pointer-events-none absolute inset-0 -z-10">
         {event.coverImageUrl ? (
           <div

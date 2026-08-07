@@ -1,6 +1,7 @@
 import { CalendarDays, Clock3, MapPin, MessageCircle, ShieldCheck, TicketCheck } from "lucide-react";
 
 import type { PublicTicket } from "@/features/tickets/types";
+import { TicketGroupRedirect } from "@/features/tickets/components/ticket-group-redirect";
 
 type TicketCardProps = {
   ticket: PublicTicket;
@@ -94,6 +95,7 @@ export function TicketCard({ ticket, qrDataUrl, showSuccess = false }: TicketCar
         Apresente este QR Code na entrada. Ele é individual e não deve ser compartilhado.
         Verifique também sua caixa de entrada e a pasta de spam.
       </div>
+      {showSuccess ? <div className="px-6 pb-6 text-center sm:px-8"><TicketGroupRedirect groupUrl={ticket.event.whatsappGroupUrl} /></div> : null}
     </div>
   );
 }

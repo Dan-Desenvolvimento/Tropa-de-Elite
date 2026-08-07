@@ -1,6 +1,7 @@
 import { after, NextResponse } from "next/server";
 
 import { sendTicketConfirmation } from "@/features/emails/server/send-ticket-confirmation";
+import { recordTrackingEvent } from "@/features/tracking/server/tracking";
 import { eventCustomFieldSchema } from "@/features/events/admin-schema";
 import {
   createRegistrationSchema,
@@ -236,6 +237,20 @@ export async function POST(
         await sendTicketConfirmation(result.registration_id!);
       });
     }
+
+    after(async () => {
+      await recordTrackingEvent(
+        {
+          eventName: "registration_completed",
+          source: "form",
+          path: new URL(request.url).pathname,
+          eventId: event.id,
+          registrationId: result.registration_id!,
+          metadata: { status: result.status ?? "unknown" },
+        },
+        request,
+      );
+    });
 
     return NextResponse.json<ApiResult<RegistrationResult>>(
       {

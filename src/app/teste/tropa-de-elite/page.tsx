@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { TrackingBeacon } from "@/features/tracking/components/tracking-beacon";
 import { ArrowRight, ChevronDown, ShieldCheck, Sparkles } from "lucide-react";
 
 const FORM_URL = "https://tropa.filipezetech.com/";
@@ -12,7 +13,13 @@ export const metadata = {
 
 export default function TropaDeEliteTestPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#050506] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#050506] text-white">
+      <TrackingBeacon source="site" />
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute left-[-18rem] top-[42rem] size-[42rem] rounded-full bg-red-950/35 blur-[150px]" />
+        <div className="absolute right-[-20rem] top-[92rem] size-[48rem] rounded-full bg-red-900/20 blur-[170px]" />
+        <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_72%,transparent)]" />
+      </div>
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute left-1/2 top-[-22rem] h-[46rem] w-[46rem] -translate-x-1/2 rounded-full bg-red-700/20 blur-[150px]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
@@ -31,6 +38,7 @@ export default function TropaDeEliteTestPage() {
         </Link>
         <Link
           href={FORM_URL}
+          data-track="header_cta"
           className="hidden min-h-11 items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 text-sm font-bold text-red-100 transition hover:bg-red-500/20 sm:inline-flex"
         >
           Quero participar <ArrowRight className="size-4" />
@@ -54,7 +62,7 @@ export default function TropaDeEliteTestPage() {
             Um método prático de gestão, mentalidade de dono e execução para tirar o peso do operacional das suas costas e fazer a empresa avançar.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link href={FORM_URL} className="brand-glow inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-6 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">
+            <Link href={FORM_URL} data-track="hero_cta" className="brand-glow inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-6 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">
               Garantir minha vaga <ArrowRight className="size-5" />
             </Link>
             <a href="#para-quem" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-white/10 px-6 py-4 text-sm font-semibold text-zinc-300 transition hover:bg-white/5">
@@ -104,7 +112,7 @@ export default function TropaDeEliteTestPage() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">Acesso especial</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-5xl">O acesso ao método de gestão prático que você precisa é gratuito.</h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">Se você fosse contratar uma consultoria individual para treinar sua liderança, o investimento seria alto. Nesta edição, você pode participar sem custo — basta garantir sua vaga.</p>
-          <Link href={FORM_URL} className="brand-glow mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">Garantir acesso gratuito <ArrowRight className="size-5" /></Link>
+          <Link href={FORM_URL} data-track="offer_cta" className="brand-glow mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">Garantir acesso gratuito <ArrowRight className="size-5" /></Link>
         </div>
       </section>
 
@@ -112,7 +120,7 @@ export default function TropaDeEliteTestPage() {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">O próximo passo é simples</p>
         <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-5xl">Sua equipe não precisa de mais uma palestra. Precisa de direção.</h2>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">Faça sua inscrição e receba a confirmação com todos os detalhes do Tropa de Elite.</p>
-        <Link href={FORM_URL} className="brand-glow mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">Quero garantir minha vaga <ArrowRight className="size-5" /></Link>
+        <Link href={FORM_URL} data-track="final_cta" className="brand-glow mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">Quero garantir minha vaga <ArrowRight className="size-5" /></Link>
       </section>
     </main>
   );
