@@ -1,14 +1,16 @@
 import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
 import Image from "next/image";
+import { headers } from "next/headers";
 
 import { getFeaturedPublicEvent } from "@/features/events/server/get-public-event";
 import { EventCapacityIndicator } from "@/features/events/components/event-capacity-indicator";
 import { RegistrationForm } from "@/features/registrations/components/registration-form";
 import { TrackingBeacon } from "@/features/tracking/components/tracking-beacon";
+import TropaDeEliteTestPage from "@/app/teste/tropa-de-elite/page";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export async function RegistrationPage() {
   const event = await getFeaturedPublicEvent();
   const registrationOpensLater = Boolean(
     event?.registrationOpenAt && new Date() < new Date(event.registrationOpenAt),
@@ -124,4 +126,12 @@ export default async function Home() {
       </section>
     </main>
   );
+}
+
+export default async function Home() {
+  const host = (await headers()).get("host")?.split(":")[0] ?? "";
+  if (host === "tropa.filipezetech.com" || host === "localhost" || host === "127.0.0.1") {
+    return <TropaDeEliteTestPage />;
+  }
+  return <RegistrationPage />;
 }

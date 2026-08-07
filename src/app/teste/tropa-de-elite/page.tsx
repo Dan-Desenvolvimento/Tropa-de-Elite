@@ -3,7 +3,7 @@ import Link from "next/link";
 import { TrackingBeacon } from "@/features/tracking/components/tracking-beacon";
 import { ArrowRight, ChevronDown, ShieldCheck, Sparkles } from "lucide-react";
 
-const FORM_URL = "https://tropa.filipezetech.com/";
+const FORM_URL = "https://tropa.filipezetech.com/inscricao";
 
 export const metadata = {
   title: "Tropa de Elite — Liderança que entrega resultado",

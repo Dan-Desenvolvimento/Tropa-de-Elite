@@ -128,7 +128,7 @@ Em **Authentication → URL Configuration**:
 
 - Site URL local: `http://localhost:3000`
 - Redirect URL local: `http://localhost:3000/auth/confirm`
-- Produção: `https://tropadeelite.filipezetech.com/auth/confirm`
+- Produção: `https://tropa.filipezetech.com/auth/confirm`
 
 Mantenha o provedor de e-mail habilitado para permitir login com senha, mas desative o cadastro público global. Convites são gerados pelo Supabase e enviados pelo painel através da Resend usando um `token_hash` de uso único.
 
@@ -152,8 +152,8 @@ npm run email:dev
 
 1. Importe o repositório GitHub na Vercel.
 2. Cadastre todas as variáveis do `.env.example` em Production, Preview e Development conforme necessário.
-3. Configure `NEXT_PUBLIC_APP_URL=https://tropadeelite.filipezetech.com` em produção.
-4. Adicione `tropadeelite.filipezetech.com` em **Settings → Domains**.
+3. Configure `NEXT_PUBLIC_APP_URL=https://tropa.filipezetech.com` em produção. A LP fica em `https://tropa.filipezetech.com/` e direciona para `https://tropa.filipezetech.com/inscricao`.
+4. Use o domínio `tropa.filipezetech.com` no projeto da Vercel. O site e o formulário funcionam no mesmo domínio, em rotas diferentes (`/` e `/inscricao`).
 5. Crie o CNAME indicado pela Vercel no provedor DNS.
 6. Aguarde a emissão do certificado HTTPS antes de testar a câmera.
 

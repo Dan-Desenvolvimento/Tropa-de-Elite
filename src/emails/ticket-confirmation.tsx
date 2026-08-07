@@ -117,7 +117,7 @@ const notice = { color: "#8f8f98", fontSize: "13px", lineHeight: "1.55", margin:
 const link = { color: "#ef5159" };
 
 TicketConfirmationEmail.PreviewProps = {
-  logoUrl: "https://tropadeelite.filipezetech.com/Tropa-de-elite-branca-para-fundo-preto.png",
+  logoUrl: "https://tropa.filipezetech.com/Tropa-de-elite-branca-para-fundo-preto.png",
   firstName: "Daniel",
   eventName: "Tropa de Elite",
   eventDate: "16 de agosto de 2026",
@@ -126,7 +126,7 @@ TicketConfirmationEmail.PreviewProps = {
   address: "Rua Cuiabá, 42 — Bairro Brasil",
   city: "Vitória da Conquista — BA",
   ticketCode: "TDE-8F4K2D",
-  ticketUrl: "https://tropadeelite.filipezetech.com/ingresso/exemplo",
+  ticketUrl: "https://tropa.filipezetech.com/ingresso/exemplo",
   whatsappGroupUrl: null,
   supportEmail: "equipadodanmkt@gmail.com",
 } satisfies TicketConfirmationEmailProps;

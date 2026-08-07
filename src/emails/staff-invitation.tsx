@@ -60,6 +60,6 @@ const notice = { color: "#85858e", fontSize: "12px", lineHeight: "1.55", margin:
 StaffInvitationEmail.PreviewProps = {
   firstName: "Mariana",
   roleLabel: "operador de check-in",
-  inviteUrl: "https://tropadeelite.filipezetech.com/auth/confirm?token_hash=exemplo&type=invite",
+  inviteUrl: "https://tropa.filipezetech.com/auth/confirm?token_hash=exemplo&type=invite",
 } satisfies StaffInvitationEmailProps;
 
