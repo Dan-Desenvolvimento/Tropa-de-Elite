@@ -37,10 +37,11 @@ export default function TropaDeEliteTestPage() {
         </Link>
       </header>
 
-      <section id="top" className="relative mx-auto grid min-h-[720px] w-full max-w-7xl items-center gap-12 overflow-hidden px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:px-12 lg:pb-28">
+      <section id="top" className="relative grid min-h-[720px] w-full items-center gap-12 overflow-hidden px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:px-12 lg:pb-28">
         <Image src="/tropa-hero-placeholder.png" alt="Mentor em ambiente de liderança" fill priority sizes="100vw" className="object-cover object-[68%_center] opacity-75" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050506] via-[#050506]/90 to-[#050506]/15" />
-        <div className="relative max-w-3xl">
+        <div className="relative mx-auto w-full max-w-7xl">
+          <div className="max-w-3xl">
           <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-red-200">
             <Sparkles className="size-4 text-red-500" />
             Imersão para quem lidera de verdade
@@ -61,6 +62,7 @@ export default function TropaDeEliteTestPage() {
             </a>
           </div>
           <p className="mt-5 flex items-center gap-2 text-xs text-zinc-500"><ShieldCheck className="size-4 text-emerald-500" /> Inscrição oficial e confirmação por e-mail.</p>
+          </div>
         </div>
       </section>
 

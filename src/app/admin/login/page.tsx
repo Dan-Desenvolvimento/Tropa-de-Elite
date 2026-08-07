@@ -22,7 +22,7 @@ export default async function AdminLoginPage() {
             fill
             priority
             sizes="240px"
-            className="object-cover object-[center_59%]"
+            className="object-contain object-center"
           />
         </div>
         <h1 className="text-center text-3xl font-semibold tracking-tight text-white">Acesso da equipe</h1>

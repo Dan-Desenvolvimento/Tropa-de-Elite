@@ -74,7 +74,7 @@ export default async function ProtectedAdminLayout({
             alt="Tropa de Elite"
             fill
             sizes="192px"
-            className="object-cover object-[center_59%]"
+            className="object-contain object-center"
           />
         </div>
 

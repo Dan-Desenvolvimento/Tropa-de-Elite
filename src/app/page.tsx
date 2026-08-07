@@ -55,7 +55,7 @@ export default async function Home() {
                 fill
                 priority
                 sizes="288px"
-                className="object-cover object-[center_59%]"
+                className="object-contain object-center"
               />
             </div>
 
