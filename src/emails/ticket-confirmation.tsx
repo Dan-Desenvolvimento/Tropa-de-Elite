@@ -49,7 +49,7 @@ export function TicketConfirmationEmail({
       <Body style={body}>
         <Container style={container}>
           <Section style={brandSection}>
-            <Img src={logoUrl} width="220" height="72" alt="Tropa de Elite" style={brandLogo} />
+            <Img src={logoUrl} width="220" height="55" alt="Tropa de Elite" style={brandLogo} />
             <Text style={eyebrow}>TROPA DE ELITE</Text>
             <Heading style={title}>Inscrição confirmada.</Heading>
             <Text style={intro}>Olá, {firstName}. Sua participação em {eventName} está garantida.</Text>
@@ -100,7 +100,7 @@ export function TicketConfirmationEmail({
 const body = { backgroundColor: "#050506", fontFamily: "Arial, sans-serif", margin: 0, padding: "32px 12px" };
 const container = { backgroundColor: "#111114", border: "1px solid #28282d", borderRadius: "24px", maxWidth: "600px", overflow: "hidden" };
 const brandSection = { backgroundColor: "#19090b", padding: "36px 36px 28px" };
-const brandLogo = { display: "block", height: "72px", margin: "0 0 24px", objectFit: "cover" as const, objectPosition: "center 59%", width: "220px" };
+const brandLogo = { display: "block", height: "55px", margin: "0 0 24px", maxWidth: "220px", width: "220px" };
 const contentSection = { padding: "32px 36px" };
 const eyebrow = { color: "#ef3039", fontSize: "12px", fontWeight: "700", letterSpacing: "3px", margin: "0 0 14px" };
 const title = { color: "#ffffff", fontSize: "34px", lineHeight: "1.15", margin: "0" };

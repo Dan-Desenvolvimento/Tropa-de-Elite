@@ -29,11 +29,11 @@ const nextConfig: NextConfig = {
               "font-src 'self' data: https://fonts.gstatic.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               isDevelopment
-                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-                : "script-src 'self' 'unsafe-inline'",
+                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net"
+                : "script-src 'self' 'unsafe-inline' https://connect.facebook.net",
               isDevelopment
-                ? "connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https://*.supabase.co wss://*.supabase.co"
-                : "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+                ? "connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https://*.supabase.co wss://*.supabase.co https://www.facebook.com https://connect.facebook.net"
+                : "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.facebook.com https://connect.facebook.net",
               "media-src 'self' blob:",
               ...(isDevelopment ? [] : ["upgrade-insecure-requests"]),
             ].join("; "),
