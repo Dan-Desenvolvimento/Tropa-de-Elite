@@ -47,6 +47,14 @@ describe("registrationSchema", () => {
     expect(result.jobRole).toBe("director");
   });
 
+  it("aceita o cargo Sócio", () => {
+    const result = registrationSchema.safeParse({
+      ...validRegistration,
+      jobRole: "partner",
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("rejeita e-mail inválido", () => {
     const result = registrationSchema.safeParse({
       ...validRegistration,

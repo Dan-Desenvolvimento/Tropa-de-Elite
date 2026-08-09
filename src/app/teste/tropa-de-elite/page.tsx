@@ -76,7 +76,7 @@ export default function TropaDeEliteTestPage() {
 
       <section id="para-quem" className="mx-auto w-full max-w-7xl px-5 pb-20 sm:px-8 lg:px-12 lg:pb-28">
         <div className="mb-12 text-center"><p className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">Para quem é</p><h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-5xl">O método para quem precisa liderar sem desculpas.</h2></div>
-        <div className="grid gap-6 border-t border-white/8 pt-12 sm:grid-cols-3">
+        <div className="grid gap-6 border-t border-white/8 pt-13 sm:grid-cols-3">
           {[
             ["01", "Gestão e liderança", "Para gerentes, supervisores e gestores que foram promovidos pela execução e agora precisam liderar pessoas.", "Parar de apagar incêndios e construir autonomia operacional."],
             ["02", "Mentalidade empresarial", "Para profissionais que pensam como sócios, não como funcionários que apenas esperam ordens.", "Trocar passividade por responsabilidade e velocidade."],
@@ -98,7 +98,7 @@ export default function TropaDeEliteTestPage() {
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-5xl">Experiência de quem vive o desafio do lado de dentro.</h2>
           <div className="mt-6 space-y-4 text-base leading-7 text-zinc-400">
             <p><strong className="text-white">Filipe Zetech</strong> não fala de gestão de uma sala de aula. Ele conhece a pressão, a cobrança e o peso de fazer uma empresa avançar.</p>
-            <p>Depois de anos ajudando donos de pequenas e médias empresas, transformou esse conhecimento em um método direto, prático e sem enrolação.</p>
+            <p>Depois de anos ajudando donos de pequenas e médias empresas, transformou esse conhecimento em um método direto, <strong className="text-white">prático e sem enrolação.</strong></p>
             <p>Agora, esse método chega ao Tropa de Elite para formar gerentes, supervisores e líderes capazes de fazer o negócio crescer sem depender deles para tudo.</p>
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function TropaDeEliteTestPage() {
         <div className="glass-panel rounded-[2rem] p-7 sm:p-12">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">Acesso especial</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-5xl">O acesso ao método de gestão prático que você precisa é gratuito.</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">Se você fosse contratar uma consultoria individual para treinar sua liderança, o investimento seria alto. Nesta edição, você pode participar sem custo — basta garantir sua vaga.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">Se você fosse contratar uma consultoria individual para treinar sua liderança, <strong className="text-white">o investimento seria alto.</strong> Nesta edição, você pode participar sem custo — basta garantir sua vaga.</p>
           <Link href={FORM_URL} data-track="offer_cta" className="brand-glow mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">Garantir acesso gratuito <ArrowRight className="size-5" /></Link>
         </div>
       </section>

@@ -1,5 +1,6 @@
 export const JOB_ROLE_VALUES = [
   "owner",
+  "partner",
   "ceo",
   "director",
   "manager",
@@ -12,6 +13,7 @@ export type JobRole = (typeof JOB_ROLE_VALUES)[number];
 
 const POTENTIAL_BUSINESS_OWNER_ROLES = new Set<JobRole>([
   "owner",
+  "partner",
   "ceo",
   "director",
 ]);
@@ -29,6 +31,7 @@ export const JOB_ROLE_OPTIONS: ReadonlyArray<{
   label: string;
 }> = [
   { value: "owner", label: "Dono" },
+  { value: "partner", label: "Sócio" },
   { value: "ceo", label: "C.E.O" },
   { value: "director", label: "Diretor" },
   { value: "manager", label: "Gerente" },

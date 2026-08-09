@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { isPotentialBusinessOwner } from "./strategic-profile";
 
 describe("isPotentialBusinessOwner", () => {
-  it.each(["owner", "ceo", "director"])(
+  it.each(["owner", "partner", "ceo", "director"])(
     "sinaliza o cargo %s",
     (jobRole) => {
       expect(
