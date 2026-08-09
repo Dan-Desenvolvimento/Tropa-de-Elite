@@ -171,7 +171,7 @@ export default async function RegistrationDetailPage({
           />
           <Row
             label="Status"
-            value={registration.status}
+            value={formatRegistrationStatus(registration.status)}
           />
           <Row
             label="Inscrição"
@@ -254,14 +254,18 @@ export default async function RegistrationDetailPage({
                   <div className="flex justify-between gap-3">
                     <span
                       className={
-                        email.status === "Enviado"
+                        email.status === "sent"
                           ? "text-emerald-400"
-                          : email.status === "Falhou"
+                          : email.status === "failed"
                             ? "text-red-400"
                             : "text-amber-400"
                       }
                     >
-                      {email.status}
+                      {email.status === "sent"
+                        ? "Enviado"
+                        : email.status === "failed"
+                          ? "Falhou"
+                          : "Pendente"}
                     </span>
                     <span className="text-xs text-zinc-600">
                       {formatDateTime(
@@ -427,6 +431,14 @@ function Row({
       </span>
     </div>
   );
+}
+
+function formatRegistrationStatus(status: RegistrationDetail["status"]) {
+  return {
+    confirmed: "Confirmado",
+    waitlist: "Lista de espera",
+    cancelled: "Cancelado",
+  }[status];
 }
 
 function Empty() {

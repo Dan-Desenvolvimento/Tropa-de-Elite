@@ -125,15 +125,22 @@ export async function sendTicketConfirmation(registrationId: string) {
 
     if (error) throw new Error(error.message);
 
-    await supabase
+    const { error: sentLogError } = await supabase
       .from("email_logs")
       .update({
-        status: "Enviado",
+        status: "sent",
         provider_message_id: data?.id ?? null,
         sent_at: new Date().toISOString(),
         error_message: null,
       })
       .eq("id", emailLog.id);
+
+    if (sentLogError) {
+      console.error("Could not update email log after successful delivery", {
+        emailLogId: emailLog.id,
+        name: sentLogError.name,
+      });
+    }
 
     return { sent: true, providerMessageId: data?.id ?? null } as const;
   } catch (error) {
