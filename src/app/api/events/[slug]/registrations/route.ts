@@ -1,6 +1,7 @@
 import { after, NextResponse } from "next/server";
 
 import { sendTicketConfirmation } from "@/features/emails/server/send-ticket-confirmation";
+import { trackingAttributionSchema } from "@/features/tracking/schema";
 import { recordTrackingEvent } from "@/features/tracking/server/tracking";
 import { eventCustomFieldSchema } from "@/features/events/admin-schema";
 import {
@@ -45,6 +46,11 @@ export async function POST(
 ) {
   try {
     const body: unknown = await request.json();
+    const trackingAttribution = trackingAttributionSchema.safeParse(
+      body && typeof body === "object" && "tracking" in body
+        ? (body as { tracking?: unknown }).tracking
+        : undefined,
+    );
     const parsed = registrationSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -245,10 +251,16 @@ export async function POST(
           source: "form",
           path: new URL(request.url).pathname,
           eventId: event.id,
+          metaEventId: result.registration_id!,
           registrationId: result.registration_id!,
           metadata: { status: result.status ?? "unknown" },
+          attribution: trackingAttribution.success ? trackingAttribution.data : undefined,
         },
         request,
+        {
+          email: validated.data.email,
+          phone: validated.data.phone,
+        },
       );
     });
 

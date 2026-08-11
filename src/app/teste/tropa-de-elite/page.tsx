@@ -122,6 +122,29 @@ export default function TropaDeEliteTestPage() {
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">Faça sua inscrição e receba a confirmação com todos os detalhes do Tropa de Elite.</p>
         <Link href={FORM_URL} data-track="final_cta" className="brand-glow mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-red-600 px-7 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-red-500">Quero garantir minha vaga <ArrowRight className="size-5" /></Link>
       </section>
+
+      <footer className="border-t border-white/10 bg-black/25">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-7 px-5 py-10 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo-simbolo.png"
+              alt="Tropa de Elite"
+              width={48}
+              height={48}
+              className="size-12 object-contain"
+            />
+            <div>
+              <p className="text-sm font-semibold text-white">Tropa de Elite</p>
+              <p className="mt-1 text-xs text-zinc-500">Liderança que entrega resultado.</p>
+            </div>
+          </div>
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-zinc-400" aria-label="Links do rodapé">
+            <Link href={FORM_URL} data-track="footer_cta" className="transition hover:text-white">Garantir minha vaga</Link>
+            <Link href="/politica-de-privacidade" className="transition hover:text-white">Política de privacidade</Link>
+          </nav>
+          <p className="text-xs text-zinc-600">© 2026 Filipe Zetech. Todos os direitos reservados.</p>
+        </div>
+      </footer>
     </main>
   );
 }

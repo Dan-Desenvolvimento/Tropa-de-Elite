@@ -18,6 +18,7 @@ import {
   isPotentialBusinessOwner,
   type JobRole,
 } from "@/features/registrations/job-roles";
+import { getClientTrackingAttribution } from "@/features/tracking/components/tracking-beacon";
 
 type RegistrationFormProps = {
   eventSlug: string;
@@ -94,7 +95,7 @@ export function RegistrationForm({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(input),
+          body: JSON.stringify({ ...input, tracking: getClientTrackingAttribution() }),
         },
       );
       const result = (await response.json()) as RegistrationResponse;
