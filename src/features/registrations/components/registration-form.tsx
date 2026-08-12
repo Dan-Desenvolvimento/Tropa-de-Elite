@@ -25,6 +25,8 @@ type RegistrationFormProps = {
   privacyPolicyUrl: string | null;
   customFields?: EventCustomField[];
   disabled?: boolean;
+  waitlistEnabled?: boolean;
+  soldOut?: boolean;
 };
 
 type RegistrationResponse =
@@ -39,6 +41,8 @@ export function RegistrationForm({
   privacyPolicyUrl,
   customFields = [],
   disabled = false,
+  waitlistEnabled = false,
+  soldOut = false,
 }: RegistrationFormProps) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -138,6 +142,13 @@ export function RegistrationForm({
           {...register("website")}
         />
       </div>
+
+      {soldOut && waitlistEnabled ? (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-6 text-amber-100">
+          <p className="font-bold text-white">Inscrições encerradas</p>
+          <p className="mt-1">As vagas regulares foram preenchidas. Faça sua inscrição para entrar na lista de espera.</p>
+        </div>
+      ) : null}
 
       <Field label="Nome completo" error={errors.fullName?.message}>
         <input
@@ -343,6 +354,8 @@ export function RegistrationForm({
           </>
         ) : disabled ? (
           "Inscrições indisponíveis"
+        ) : soldOut && waitlistEnabled ? (
+          "Entrar na lista de espera"
         ) : (
           <>
             Garantir minha vaga <ArrowRight className="size-5" />

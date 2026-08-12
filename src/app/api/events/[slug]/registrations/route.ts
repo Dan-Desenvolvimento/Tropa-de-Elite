@@ -244,25 +244,27 @@ export async function POST(
       });
     }
 
-    after(async () => {
-      await recordTrackingEvent(
-        {
-          eventName: "registration_completed",
-          source: "form",
-          path: new URL(request.url).pathname,
-          eventId: event.id,
-          metaEventId: result.registration_id!,
-          registrationId: result.registration_id!,
-          metadata: { status: result.status ?? "unknown" },
-          attribution: trackingAttribution.success ? trackingAttribution.data : undefined,
-        },
-        request,
-        {
-          email: validated.data.email,
-          phone: validated.data.phone,
-        },
-      );
-    });
+    if (result.status === "confirmed") {
+      after(async () => {
+        await recordTrackingEvent(
+          {
+            eventName: "registration_completed",
+            source: "form",
+            path: new URL(request.url).pathname,
+            eventId: event.id,
+            metaEventId: result.registration_id!,
+            registrationId: result.registration_id!,
+            metadata: { status: "confirmed" },
+            attribution: trackingAttribution.success ? trackingAttribution.data : undefined,
+          },
+          request,
+          {
+            email: validated.data.email,
+            phone: validated.data.phone,
+          },
+        );
+      });
+    }
 
     return NextResponse.json<ApiResult<RegistrationResult>>(
       {

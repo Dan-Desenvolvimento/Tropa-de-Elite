@@ -129,7 +129,9 @@ export default async function EventPage({ params }: PageProps<"/eventos/[slug]">
             eventSlug={event.slug}
             privacyPolicyUrl={event.privacyPolicyUrl ?? "/politica-de-privacidade"}
             customFields={event.customFields}
-            disabled={!registrationOpen}
+            disabled={!registrationOpen && !(event.remainingSlots === 0 && event.waitlistEnabled)}
+            waitlistEnabled={event.waitlistEnabled}
+            soldOut={event.remainingSlots === 0}
           />
 
           {event.supportEmail ? (

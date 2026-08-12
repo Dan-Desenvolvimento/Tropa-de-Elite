@@ -116,7 +116,9 @@ export async function RegistrationPage() {
                 eventSlug={event.slug}
                 privacyPolicyUrl={event.privacyPolicyUrl}
                 customFields={event.customFields}
-                disabled={!registrationOpen}
+                disabled={!registrationOpen && !(event.remainingSlots === 0 && event.waitlistEnabled)}
+                waitlistEnabled={event.waitlistEnabled}
+                soldOut={event.remainingSlots === 0}
               />
             ) : (
               <div className="rounded-2xl border border-white/8 bg-black/30 p-5 text-sm leading-6 text-zinc-400">

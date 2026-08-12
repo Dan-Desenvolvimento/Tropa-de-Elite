@@ -22,6 +22,7 @@ export type PublicEvent = {
   capacity: number | null;
   showRemainingSlots: boolean;
   remainingSlots: number | null;
+  waitlistEnabled: boolean;
   whatsappGroupUrl: string | null;
   registrationStatus: "draft" | "open" | "closed" | "sold_out" | "finished" | "cancelled";
   registrationOpenAt: string | null;

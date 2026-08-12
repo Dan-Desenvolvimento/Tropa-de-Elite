@@ -14,7 +14,7 @@ export default async function SettingsPage() {
         <div className="mb-6 grid gap-3 sm:grid-cols-2">
           <Metric label="Acessos do site" value={summary.page_view?.site ?? 0} />
           <Metric label="Cliques no site" value={summary.cta_click?.site ?? 0} />
-          <Metric label="Acessos do formulário" value={summary.page_view?.form ?? 0} />
+          <Metric label="Acessos do formulário" value={summary.form_started?.form ?? 0} />
           <Metric label="Inscrições concluídas" value={summary.registration_completed?.form ?? 0} />
           <Metric label="Visualizações de ingresso" value={summary.ticket_view?.form ?? 0} />
         </div>

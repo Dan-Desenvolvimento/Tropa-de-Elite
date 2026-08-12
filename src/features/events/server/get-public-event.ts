@@ -20,6 +20,7 @@ type EventRow = {
   city: string;
   capacity: number | null;
   show_remaining_slots: boolean;
+  waitlist_enabled: boolean;
   whatsapp_group_url: string | null;
   registration_status: PublicEvent["registrationStatus"];
   registration_open_at: string | null;
@@ -35,7 +36,7 @@ export async function getPublicEvent(slug: string): Promise<PublicEvent | null> 
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id,name,slug,description,cover_image_url,logo_image_url,start_at,end_at,timezone,venue_name,address,city,capacity,show_remaining_slots,whatsapp_group_url,registration_status,registration_open_at,registration_close_at,privacy_policy_url,privacy_policy_version,support_email,custom_fields",
+      "id,name,slug,description,cover_image_url,logo_image_url,start_at,end_at,timezone,venue_name,address,city,capacity,show_remaining_slots,waitlist_enabled,whatsapp_group_url,registration_status,registration_open_at,registration_close_at,privacy_policy_url,privacy_policy_version,support_email,custom_fields",
     )
     .eq("slug", slug)
     .maybeSingle<EventRow>();
@@ -72,6 +73,7 @@ export async function getPublicEvent(slug: string): Promise<PublicEvent | null> 
     capacity: data.capacity,
     showRemainingSlots: data.show_remaining_slots,
     remainingSlots,
+    waitlistEnabled: data.waitlist_enabled,
     whatsappGroupUrl: safeHttpsUrl(data.whatsapp_group_url),
     registrationStatus: data.registration_status,
     registrationOpenAt: data.registration_open_at,
@@ -89,7 +91,7 @@ export async function getFeaturedPublicEvent(): Promise<PublicEvent | null> {
   const { data, error } = await supabase
     .from("events")
     .select("slug")
-    .eq("registration_status", "open")
+    .in("registration_status", ["open", "sold_out"])
     .or(`registration_open_at.is.null,registration_open_at.lte.${now}`)
     .or(`registration_close_at.is.null,registration_close_at.gte.${now}`)
     .order("start_at", { ascending: true })
