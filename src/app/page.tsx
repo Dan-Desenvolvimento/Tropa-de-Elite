@@ -62,17 +62,8 @@ export async function RegistrationPage() {
                 className="object-contain object-center"
               />
             </div>
-
-            <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.04] tracking-[-0.045em] text-white sm:text-6xl lg:text-7xl">
-              Transforme seus líderes em uma equipe que entrega
-              <span className="text-red-500"> resultados.</span>
-            </h1>
-
-            <p className="mt-7 max-w-2xl text-pretty text-base leading-7 text-zinc-400 sm:text-lg">
-              Um método prático de gestão, mentalidade de dono e execução para tirar o peso do operacional das suas costas e fazer a empresa avançar.
-            </p>
-
-            {eventDetails.length > 0 ? (
+            
+{eventDetails.length > 0 ? (
               <div className="mt-9 flex flex-wrap gap-x-6 gap-y-4 text-sm text-zinc-300">
                 {eventDetails.map(({ icon: Icon, label }) => (
                   <div key={label} className="flex items-center gap-2.5">
@@ -82,6 +73,17 @@ export async function RegistrationPage() {
                 ))}
               </div>
             ) : null}
+
+            <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.04] tracking-[-0.045em] text-white sm:text-6xl lg:text-7xl">
+              Um dia de liderança, vendas, desenvolvimento e 
+              <span className="text-red-500"> alta performance.</span>
+            </h1>
+
+            <p className="mt-7 max-w-2xl text-pretty text-base leading-7 text-zinc-400 sm:text-lg">
+              Um método prático de gestão, mentalidade de dono e execução para tirar o peso do operacional das suas costas e fazer a empresa avançar.
+            </p>
+
+            
 
             
           </div>

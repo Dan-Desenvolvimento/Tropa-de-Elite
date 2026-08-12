@@ -116,11 +116,13 @@ async function sendMetaConversion(
         }),
       },
     );
+    const responseBody = await response.json().catch(() => ({} as Record<string, unknown>));
     if (!response.ok) {
       console.error("Meta Conversions API rejected event", {
         eventName,
         status: response.status,
-        body: await response.text(),
+        messages: responseBody.messages,
+        fbtrace_id: responseBody.fbtrace_id,
       });
     }
   } catch (error) {

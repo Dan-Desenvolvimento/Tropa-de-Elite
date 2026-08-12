@@ -41,6 +41,9 @@ supabase/.temp/
 # vercel
 .vercel
 
+# Exportações privadas para audiências Meta (contêm dados pessoais)
+/private-exports/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
