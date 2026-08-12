@@ -9,6 +9,7 @@ import {
 import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
 import { EventReminderButton } from "@/features/admin/components/event-reminder-button";
+import { WhatsAppReminderButton } from "@/features/admin/components/whatsapp-reminder-button";
 import { isPotentialBusinessOwner } from "@/features/checkin/strategic-profile";
 import { formatJobRole } from "@/features/registrations/job-roles";
 import { getEventPermissionSet } from "@/lib/auth/dal";
@@ -154,7 +155,10 @@ export default async function RegistrationsPage({
           hasHeaderActions ? (
             <>
               {permissions.canManageRegistrations ? (
-                <EventReminderButton eventId={id} available={reminderAvailable} />
+                <>
+                  <WhatsAppReminderButton eventId={id} />
+                  <EventReminderButton eventId={id} available={reminderAvailable} />
+                </>
               ) : null}
               {permissions.canViewReports ? (
                 <a

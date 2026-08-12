@@ -23,6 +23,9 @@ type EventFormValues = {
   waitlistEnabled?: boolean;
   showRemainingSlots?: boolean;
   whatsappGroupUrl?: string | null;
+  whatsappTemplateName?: string | null;
+  whatsappTemplateLanguage?: string | null;
+  whatsappReminderMessage?: string | null;
   registrationStatus?: string;
   registrationOpenAt?: string | null;
   registrationCloseAt?: string | null;
@@ -68,6 +71,9 @@ export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
       waitlistEnabled: data.get("waitlistEnabled") === "on",
       showRemainingSlots: data.get("showRemainingSlots") === "active",
       whatsappGroupUrl: nullableText("whatsappGroupUrl"),
+      whatsappTemplateName: nullableText("whatsappTemplateName"),
+      whatsappTemplateLanguage: String(data.get("whatsappTemplateLanguage") ?? "pt_BR"),
+      whatsappReminderMessage: nullableText("whatsappReminderMessage"),
       registrationStatus: String(data.get("registrationStatus") ?? "draft"),
       registrationOpenAt: nullableDate("registrationOpenAt"),
       registrationCloseAt: nullableDate("registrationCloseAt"),
@@ -161,11 +167,14 @@ export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
       <FormSection title="Comunicação">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Link do grupo de WhatsApp"><input name="whatsappGroupUrl" type="url" defaultValue={initial.whatsappGroupUrl ?? ""} className={inputClass} /></Field>
+          <Field label="Modelo aprovado no WhatsApp"><input name="whatsappTemplateName" defaultValue={initial.whatsappTemplateName ?? ""} placeholder="lembrete_evento_qr" className={inputClass} /></Field>
+          <Field label="Idioma do modelo"><input name="whatsappTemplateLanguage" defaultValue={initial.whatsappTemplateLanguage ?? "pt_BR"} className={inputClass} /></Field>
           <Field label="E-mail de suporte"><input name="supportEmail" type="email" defaultValue={initial.supportEmail ?? ""} className={inputClass} /></Field>
           <Field label="Assunto do e-mail"><input name="emailSubject" defaultValue={initial.emailSubject ?? ""} className={inputClass} /></Field>
           <Field label="Política de Privacidade (URL)"><input name="privacyPolicyUrl" type="url" defaultValue={initial.privacyPolicyUrl ?? ""} className={inputClass} /></Field>
         </div>
         <Field label="Mensagem de confirmação"><textarea name="confirmationMessage" defaultValue={initial.confirmationMessage ?? ""} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /></Field>
+        <Field label="Mensagem do lembrete por WhatsApp"><textarea name="whatsappReminderMessage" defaultValue={initial.whatsappReminderMessage ?? ""} rows={4} maxLength={1000} placeholder="Faltam poucos dias para o evento. Prepare-se para viver essa experiência." className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /><span className="mt-2 block text-xs font-normal leading-5 text-zinc-600">Enviado como variável do modelo aprovado. O QR Code individual será a imagem do cabeçalho.</span></Field>
       </FormSection>
 
       {error ? <div role="alert" className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-200">{error}</div> : null}
