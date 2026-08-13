@@ -10,7 +10,6 @@ type EventRow = {
   venue_name: string;
   address: string;
   city: string;
-  cover_image_url: string | null;
   whatsapp_template_name: string | null;
   whatsapp_template_language: string;
 };
@@ -48,7 +47,7 @@ export async function sendEventWhatsAppReminder(
   }
 
   const [{ data: event, error: eventError }, { data: registrations, error: registrationsError }] = await Promise.all([
-    supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,cover_image_url,whatsapp_template_name,whatsapp_template_language").eq("id", eventId).single<EventRow>(),
+    supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,whatsapp_template_name,whatsapp_template_language").eq("id", eventId).single<EventRow>(),
     registrationsQuery.returns<RegistrationRow[]>(),
   ]);
   if (eventError) throw eventError;
@@ -60,7 +59,7 @@ export async function sendEventWhatsAppReminder(
   const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: event.timezone }).format(new Date(event.start_at));
   const eventTime = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: event.timezone }).format(new Date(event.start_at));
   const baseUrl = appUrl.replace(/\/$/, "");
-  const headerImageUrl = event.cover_image_url || `${baseUrl}/tropa-hero-placeholder.png`;
+  const headerImageUrl = `${baseUrl}/cabecalho-whatsapp-evento.png`;
   let sent = 0;
   let failed = 0;
   let skipped = 0;

@@ -36,7 +36,7 @@ https://tropa.filipezetech.com/ingresso/
 
 O sistema envia o `ticket_token` individual como variável `{{1}}` do botão. O QR Code aparece somente na página segura do ingresso.
 
-No disparo, o cabeçalho usa a **Imagem de capa** configurada no editor do evento. Se não houver capa, o sistema usa a imagem pública padrão `tropa-hero-placeholder.png`.
+No disparo, o cabeçalho usa sempre a imagem pública `cabecalho-whatsapp-evento.png`. Para trocar a arte, substitua esse arquivo em `public/` e faça um novo deploy.
 
 ## 2. Variáveis da Vercel
 

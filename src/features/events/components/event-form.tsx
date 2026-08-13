@@ -182,7 +182,7 @@ export function EventForm({
         </div>
         <Field label="Mensagem de confirmação"><textarea name="confirmationMessage" defaultValue={initial.confirmationMessage ?? ""} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /></Field>
         <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-xs leading-5 text-zinc-500">
-          A imagem de capa do evento será usada no cabeçalho. O sistema preenche automaticamente nome, evento, data, horário e local. O botão recebe o token individual e abre a página segura do ingresso com QR Code.
+          O cabeçalho usa a imagem pública cabecalho-whatsapp-evento.png. O sistema preenche automaticamente nome, evento, data, horário e local. O botão recebe o token individual e abre a página segura do ingresso com QR Code.
         </div>
         {initial.id ? (
           <div className="rounded-2xl border border-white/10 bg-black/25 p-5">
