@@ -127,6 +127,12 @@ export default async function EventDetailPage({
 
       <div className="max-w-5xl p-5 sm:p-8 lg:p-10">
         <EventForm
+          whatsappApiConfigured={Boolean(
+            process.env.WHATSAPP_PHONE_NUMBER_ID &&
+              process.env.WHATSAPP_ACCESS_TOKEN &&
+              process.env.WHATSAPP_API_VERSION,
+          )}
+          canSendWhatsApp={permissions.canManageRegistrations}
           initial={{
             id: event.id,
             name: event.name,

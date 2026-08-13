@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import type { EventCustomField } from "@/features/events/types";
+import { WhatsAppReminderButton } from "@/features/admin/components/whatsapp-reminder-button";
 
 type EventFormValues = {
   id?: string;
@@ -37,7 +38,15 @@ type EventFormValues = {
   customFields?: EventCustomField[];
 };
 
-export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
+export function EventForm({
+  initial = {},
+  whatsappApiConfigured = false,
+  canSendWhatsApp = false,
+}: {
+  initial?: EventFormValues;
+  whatsappApiConfigured?: boolean;
+  canSendWhatsApp?: boolean;
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -175,6 +184,30 @@ export function EventForm({ initial = {} }: { initial?: EventFormValues }) {
         </div>
         <Field label="Mensagem de confirmação"><textarea name="confirmationMessage" defaultValue={initial.confirmationMessage ?? ""} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /></Field>
         <Field label="Mensagem do lembrete por WhatsApp"><textarea name="whatsappReminderMessage" defaultValue={initial.whatsappReminderMessage ?? ""} rows={4} maxLength={1000} placeholder="Faltam poucos dias para o evento. Prepare-se para viver essa experiência." className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /><span className="mt-2 block text-xs font-normal leading-5 text-zinc-600">Enviado como variável do modelo aprovado. O QR Code individual será a imagem do cabeçalho.</span></Field>
+        {initial.id ? (
+          <div className="rounded-2xl border border-white/10 bg-black/25 p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className={`size-2.5 rounded-full ${whatsappApiConfigured ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  <p className="font-semibold text-white">API do WhatsApp {whatsappApiConfigured ? "configurada" : "ainda não configurada"}</p>
+                </div>
+                <p className="mt-2 max-w-2xl text-xs leading-5 text-zinc-500">
+                  {whatsappApiConfigured
+                    ? "Salve o evento antes do disparo. O envio considera apenas inscritos confirmados que aceitaram receber comunicações."
+                    : "Adicione WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_ACCESS_TOKEN e WHATSAPP_API_VERSION na Vercel e faça um novo deploy."}
+                </p>
+              </div>
+              {canSendWhatsApp ? (
+                <WhatsAppReminderButton
+                  eventId={initial.id}
+                  disabled={!whatsappApiConfigured || !initial.whatsappTemplateName || !initial.whatsappReminderMessage}
+                  disabledReason={!whatsappApiConfigured ? "Configure a API na Vercel." : "Salve o modelo aprovado e a mensagem antes do disparo."}
+                />
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </FormSection>
 
       {error ? <div role="alert" className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-200">{error}</div> : null}

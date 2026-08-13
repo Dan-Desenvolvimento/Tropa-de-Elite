@@ -3,7 +3,15 @@
 import { LoaderCircle, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
-export function WhatsAppReminderButton({ eventId }: { eventId: string }) {
+export function WhatsAppReminderButton({
+  eventId,
+  disabled = false,
+  disabledReason,
+}: {
+  eventId: string;
+  disabled?: boolean;
+  disabledReason?: string;
+}) {
   const [pending, setPending] = useState(false);
 
   async function send() {
@@ -16,7 +24,7 @@ export function WhatsAppReminderButton({ eventId }: { eventId: string }) {
   }
 
   return (
-    <button type="button" onClick={() => void send()} disabled={pending} className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50">
+    <button type="button" onClick={() => void send()} disabled={disabled || pending} title={disabled ? disabledReason : "Enviar agora para os inscritos elegíveis"} className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-40">
       {pending ? <LoaderCircle className="size-4 animate-spin" /> : <MessageCircle className="size-4" />}
       Enviar WhatsApp com QR
     </button>
