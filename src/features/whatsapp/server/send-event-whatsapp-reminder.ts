@@ -22,7 +22,10 @@ type RegistrationRow = {
   ticket_token: string;
 };
 
-export async function sendEventWhatsAppReminder(eventId: string) {
+export async function sendEventWhatsAppReminder(
+  eventId: string,
+  registrationId?: string,
+) {
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
   const apiVersion = process.env.WHATSAPP_API_VERSION;
@@ -32,9 +35,21 @@ export async function sendEventWhatsAppReminder(eventId: string) {
   }
 
   const supabase = createAdminClient();
+  let registrationsQuery = supabase
+    .from("registrations")
+    .select("id,full_name,phone,ticket_token")
+    .eq("event_id", eventId)
+    .eq("status", "confirmed")
+    .eq("communications_consent", true)
+    .order("registered_at", { ascending: true });
+
+  if (registrationId) {
+    registrationsQuery = registrationsQuery.eq("id", registrationId);
+  }
+
   const [{ data: event, error: eventError }, { data: registrations, error: registrationsError }] = await Promise.all([
     supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,cover_image_url,whatsapp_template_name,whatsapp_template_language").eq("id", eventId).single<EventRow>(),
-    supabase.from("registrations").select("id,full_name,phone,ticket_token").eq("event_id", eventId).eq("status", "confirmed").eq("communications_consent", true).order("registered_at", { ascending: true }).returns<RegistrationRow[]>(),
+    registrationsQuery.returns<RegistrationRow[]>(),
   ]);
   if (eventError) throw eventError;
   if (registrationsError) throw registrationsError;

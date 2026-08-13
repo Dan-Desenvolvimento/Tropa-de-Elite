@@ -3,6 +3,7 @@
 import {
   LoaderCircle,
   Mail,
+  MessageCircle,
   RotateCcw,
   ShieldX,
   UserX,
@@ -17,6 +18,7 @@ export function RegistrationActions({
   cancelled,
   canManage,
   canAnonymize,
+  canSendWhatsApp = false,
 }: {
   eventId: string;
   registrationId: string;
@@ -24,6 +26,7 @@ export function RegistrationActions({
   cancelled: boolean;
   canManage: boolean;
   canAnonymize: boolean;
+  canSendWhatsApp?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] =
@@ -44,6 +47,24 @@ export function RegistrationActions({
         "Não foi possível reenviar o ingresso.",
       );
     }
+  }
+
+  async function sendWhatsApp() {
+    if (!window.confirm("Enviar o lembrete pelo WhatsApp somente para este inscrito?")) return;
+    setPending("whatsapp");
+
+    const response = await fetch(
+      `/api/admin/events/${eventId}/registrations/${registrationId}/whatsapp-reminder`,
+      { method: "POST" },
+    );
+    const body = await response.json().catch(() => null) as { message?: string } | null;
+    setPending(null);
+
+    window.alert(
+      response.ok
+        ? "WhatsApp enviado com sucesso para este inscrito."
+        : (body?.message ?? "Não foi possível enviar o WhatsApp."),
+    );
   }
 
   async function mutate(
@@ -98,6 +119,17 @@ export function RegistrationActions({
 
   return (
     <div className="flex items-center gap-1">
+      {canManage && !cancelled ? (
+        <button
+          onClick={() => void sendWhatsApp()}
+          disabled={!canSendWhatsApp}
+          title={canSendWhatsApp ? "Enviar WhatsApp somente para este inscrito" : "Disponível apenas para inscrito confirmado, com consentimento e modelo configurado"}
+          className="rounded-lg p-2 text-zinc-500 hover:bg-white/5 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-30"
+        >
+          <MessageCircle className="size-4" />
+        </button>
+      ) : null}
+
       {canManage && !cancelled ? (
         <button
           onClick={resend}

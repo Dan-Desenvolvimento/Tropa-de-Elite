@@ -7,11 +7,15 @@ import {
   TicketCheck,
   UserRoundCheck,
   UsersRound,
+  MessageCircle,
+  Eye,
+  CheckCheck,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/admin/page-header";
 import { getEventSummaries } from "@/features/admin/server/get-event-summaries";
 import { hasEventPermission } from "@/lib/auth/dal";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function ReportsPage({
   params,
@@ -27,6 +31,19 @@ export default async function ReportsPage({
   ).find((event) => event.event_id === id);
 
   if (!summary) notFound();
+
+  const supabase = createAdminClient();
+  const [
+    { count: whatsappAccepted },
+    { count: whatsappDelivered },
+    { count: whatsappRead },
+    { count: whatsappFailed },
+  ] = await Promise.all([
+    supabase.from("whatsapp_logs").select("id", { count: "exact", head: true }).eq("event_id", id).in("status", ["sent", "delivered", "read"]),
+    supabase.from("whatsapp_logs").select("id", { count: "exact", head: true }).eq("event_id", id).in("status", ["delivered", "read"]),
+    supabase.from("whatsapp_logs").select("id", { count: "exact", head: true }).eq("event_id", id).eq("status", "read"),
+    supabase.from("whatsapp_logs").select("id", { count: "exact", head: true }).eq("event_id", id).eq("status", "failed"),
+  ]);
 
   const confirmed = Number(summary.confirmed_count);
   const checkins = Number(summary.checkin_count);
@@ -98,6 +115,26 @@ export default async function ReportsPage({
           icon={MailWarning}
           label="Falhas de e-mail"
           value={Number(summary.email_failed_count)}
+        />
+        <Metric
+          icon={MessageCircle}
+          label="WhatsApps aceitos pela Meta"
+          value={whatsappAccepted ?? 0}
+        />
+        <Metric
+          icon={CheckCheck}
+          label="WhatsApps entregues"
+          value={whatsappDelivered ?? 0}
+        />
+        <Metric
+          icon={Eye}
+          label="WhatsApps visualizados"
+          value={whatsappRead ?? 0}
+        />
+        <Metric
+          icon={MailWarning}
+          label="Falhas de WhatsApp"
+          value={whatsappFailed ?? 0}
         />
       </div>
     </main>

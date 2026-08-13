@@ -83,12 +83,13 @@ export default async function RegistrationDetailPage({
       .maybeSingle<RegistrationDetail>(),
       supabase
         .from("events")
-        .select("name,timezone,custom_fields")
+        .select("name,timezone,custom_fields,whatsapp_template_name")
         .eq("id", id)
         .maybeSingle<{
           name: string;
           timezone: string;
           custom_fields: unknown;
+          whatsapp_template_name: string | null;
         }>(),
     supabase
       .from("email_logs")
@@ -136,6 +137,15 @@ export default async function RegistrationDetailPage({
               canAnonymize={
                 permissions.canAnonymizeRegistrations
               }
+              canSendWhatsApp={Boolean(
+                registration.status === "confirmed" &&
+                registration.communications_consent &&
+                event.whatsapp_template_name &&
+                process.env.WHATSAPP_PHONE_NUMBER_ID &&
+                process.env.WHATSAPP_ACCESS_TOKEN &&
+                process.env.WHATSAPP_API_VERSION &&
+                process.env.NEXT_PUBLIC_APP_URL,
+              )}
             />
           ) : undefined
         }
