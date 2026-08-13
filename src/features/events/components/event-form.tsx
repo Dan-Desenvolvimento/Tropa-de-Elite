@@ -26,7 +26,6 @@ type EventFormValues = {
   whatsappGroupUrl?: string | null;
   whatsappTemplateName?: string | null;
   whatsappTemplateLanguage?: string | null;
-  whatsappReminderMessage?: string | null;
   registrationStatus?: string;
   registrationOpenAt?: string | null;
   registrationCloseAt?: string | null;
@@ -82,7 +81,6 @@ export function EventForm({
       whatsappGroupUrl: nullableText("whatsappGroupUrl"),
       whatsappTemplateName: nullableText("whatsappTemplateName"),
       whatsappTemplateLanguage: String(data.get("whatsappTemplateLanguage") ?? "pt_BR"),
-      whatsappReminderMessage: nullableText("whatsappReminderMessage"),
       registrationStatus: String(data.get("registrationStatus") ?? "draft"),
       registrationOpenAt: nullableDate("registrationOpenAt"),
       registrationCloseAt: nullableDate("registrationCloseAt"),
@@ -183,7 +181,9 @@ export function EventForm({
           <Field label="Política de Privacidade (URL)"><input name="privacyPolicyUrl" type="url" defaultValue={initial.privacyPolicyUrl ?? ""} className={inputClass} /></Field>
         </div>
         <Field label="Mensagem de confirmação"><textarea name="confirmationMessage" defaultValue={initial.confirmationMessage ?? ""} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /></Field>
-        <Field label="Mensagem do lembrete por WhatsApp"><textarea name="whatsappReminderMessage" defaultValue={initial.whatsappReminderMessage ?? ""} rows={4} maxLength={1000} placeholder="Faltam poucos dias para o evento. Prepare-se para viver essa experiência." className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /><span className="mt-2 block text-xs font-normal leading-5 text-zinc-600">Enviado como variável do modelo aprovado. O QR Code individual será a imagem do cabeçalho.</span></Field>
+        <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-xs leading-5 text-zinc-500">
+          O texto é controlado pelo modelo aprovado na Meta. O sistema preenche automaticamente, nesta ordem: nome do participante, evento, data, horário, local e código do ingresso. O QR Code individual é enviado como imagem do cabeçalho.
+        </div>
         {initial.id ? (
           <div className="rounded-2xl border border-white/10 bg-black/25 p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -201,8 +201,8 @@ export function EventForm({
               {canSendWhatsApp ? (
                 <WhatsAppReminderButton
                   eventId={initial.id}
-                  disabled={!whatsappApiConfigured || !initial.whatsappTemplateName || !initial.whatsappReminderMessage}
-                  disabledReason={!whatsappApiConfigured ? "Configure a API na Vercel." : "Salve o modelo aprovado e a mensagem antes do disparo."}
+                  disabled={!whatsappApiConfigured || !initial.whatsappTemplateName}
+                  disabledReason={!whatsappApiConfigured ? "Configure a API na Vercel." : "Salve o nome do modelo aprovado antes do disparo."}
                 />
               ) : null}
             </div>

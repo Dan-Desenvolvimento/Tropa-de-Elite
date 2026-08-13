@@ -5,7 +5,7 @@ import { TicketGroupRedirect } from "@/features/tickets/components/ticket-group-
 
 type TicketCardProps = {
   ticket: PublicTicket;
-  qrDataUrl: string;
+  qrDataUrl: string | null;
   showSuccess?: boolean;
 };
 
@@ -40,7 +40,7 @@ export function TicketCard({ ticket, qrDataUrl, showSuccess = false }: TicketCar
         <p className="mt-2 text-zinc-400">{ticket.participantName}</p>
       </div>
 
-      <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_260px]">
+      <div className={`grid gap-8 p-6 sm:p-8 ${qrDataUrl ? "md:grid-cols-[1fr_260px]" : ""}`}>
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">Evento</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{ticket.event.name}</h2>
@@ -55,7 +55,7 @@ export function TicketCard({ ticket, qrDataUrl, showSuccess = false }: TicketCar
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            {showSuccess ? (
+            {showSuccess && ticket.status === "confirmed" ? (
               <a
                 href={`/ingresso/${encodeURIComponent(ticket.ticketToken)}`}
                 className="inline-flex min-h-12 items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-500"
@@ -63,14 +63,16 @@ export function TicketCard({ ticket, qrDataUrl, showSuccess = false }: TicketCar
                 Abrir meu ingresso
               </a>
             ) : null}
-            <a
-              href={qrDataUrl}
-              download={`ingresso-${ticket.ticketCode}.png`}
-              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Salvar ingresso
-            </a>
-            {ticket.event.whatsappGroupUrl ? (
+            {qrDataUrl ? (
+              <a
+                href={qrDataUrl}
+                download={`ingresso-${ticket.ticketCode}.png`}
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Salvar ingresso
+              </a>
+            ) : null}
+            {ticket.status === "confirmed" && ticket.event.whatsappGroupUrl ? (
               <a
                 href={ticket.event.whatsappGroupUrl}
                 target="_blank"
@@ -83,19 +85,24 @@ export function TicketCard({ ticket, qrDataUrl, showSuccess = false }: TicketCar
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-4 text-center">
+        {qrDataUrl ? <div className="rounded-2xl bg-white p-4 text-center">
           {/* Data URL gerada localmente pelo servidor; não contém dados pessoais. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={qrDataUrl} alt={`QR Code do ingresso ${ticket.ticketCode}`} className="mx-auto aspect-square w-full" />
           <p className="mt-2 font-mono text-sm font-bold tracking-[0.14em] text-zinc-900">{ticket.ticketCode}</p>
-        </div>
+        </div> : (
+          <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-5 text-sm leading-6 text-amber-100">
+            Sua vaga ainda não está confirmada. Se houver disponibilidade, a equipe seguirá a ordem de inscrição e enviará o ingresso por e-mail.
+          </div>
+        )}
       </div>
 
       <div className="border-t border-white/8 bg-black/25 px-6 py-5 text-center text-sm leading-6 text-zinc-400 sm:px-8">
-        Apresente este QR Code na entrada. Ele é individual e não deve ser compartilhado.
-        Verifique também sua caixa de entrada e a pasta de spam.
+        {ticket.status === "confirmed"
+          ? "Apresente este QR Code na entrada. Ele é individual e não deve ser compartilhado. Verifique também sua caixa de entrada e a pasta de spam."
+          : "Você está na lista de espera. Aguarde a confirmação da equipe antes de comparecer ao evento."}
       </div>
-      {showSuccess ? <div className="px-6 pb-6 text-center sm:px-8"><TicketGroupRedirect groupUrl={ticket.event.whatsappGroupUrl} /></div> : null}
+      {showSuccess && ticket.status === "confirmed" ? <div className="px-6 pb-6 text-center sm:px-8"><TicketGroupRedirect groupUrl={ticket.event.whatsappGroupUrl} /></div> : null}
     </div>
   );
 }

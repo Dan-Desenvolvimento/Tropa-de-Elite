@@ -1,7 +1,6 @@
 alter table public.events
   add column if not exists whatsapp_template_name text,
-  add column if not exists whatsapp_template_language text not null default 'pt_BR',
-  add column if not exists whatsapp_reminder_message text;
+  add column if not exists whatsapp_template_language text not null default 'pt_BR';
 
 alter table public.events
   drop constraint if exists events_whatsapp_template_name_check;

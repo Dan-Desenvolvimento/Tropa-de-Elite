@@ -22,6 +22,7 @@ vi.mock("@/lib/auth/dal", () => ({
 
 import { POST as confirmCheckin } from "./events/[id]/checkin/confirm/route";
 import { GET as exportRegistrations } from "./events/[id]/export/route";
+import { POST as promoteWaitlist } from "./events/[id]/waitlist/promote/route";
 
 describe("proteção das rotas administrativas", () => {
   beforeEach(() => {
@@ -70,5 +71,18 @@ describe("proteção das rotas administrativas", () => {
     expect(
       mocks.hasEventPermission,
     ).not.toHaveBeenCalled();
+  });
+
+  it("bloqueia promoção da lista de espera sem autenticação", async () => {
+    const response = await promoteWaitlist(
+      new Request(
+        "https://eventos.example.com/api/admin/events/event-1/waitlist/promote",
+        { method: "POST" },
+      ),
+      { params: Promise.resolve({ id: "event-1" }) },
+    );
+
+    expect(response.status).toBe(401);
+    expect(mocks.hasEventPermission).not.toHaveBeenCalled();
   });
 });

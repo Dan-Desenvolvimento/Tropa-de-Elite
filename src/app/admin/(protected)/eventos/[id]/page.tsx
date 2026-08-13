@@ -33,7 +33,6 @@ type AdminEventRow = {
   whatsapp_group_url: string | null;
   whatsapp_template_name: string | null;
   whatsapp_template_language: string;
-  whatsapp_reminder_message: string | null;
   registration_status: string;
   registration_open_at: string | null;
   registration_close_at: string | null;
@@ -154,7 +153,6 @@ export default async function EventDetailPage({
               event.whatsapp_group_url,
             whatsappTemplateName: event.whatsapp_template_name,
             whatsappTemplateLanguage: event.whatsapp_template_language,
-            whatsappReminderMessage: event.whatsapp_reminder_message,
             registrationStatus:
               event.registration_status,
             registrationOpenAt:

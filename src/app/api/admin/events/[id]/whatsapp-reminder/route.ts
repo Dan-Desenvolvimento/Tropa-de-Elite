@@ -23,12 +23,12 @@ export async function POST(
 
   const supabase = createAdminClient();
   const [{ data: event }, { count: eligible }] = await Promise.all([
-    supabase.from("events").select("whatsapp_template_name,whatsapp_reminder_message").eq("id", id).maybeSingle<{ whatsapp_template_name: string | null; whatsapp_reminder_message: string | null }>(),
+    supabase.from("events").select("whatsapp_template_name").eq("id", id).maybeSingle<{ whatsapp_template_name: string | null }>(),
     supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", id).eq("status", "confirmed").eq("communications_consent", true),
   ]);
   if (!event) return NextResponse.json({ success: false, message: "Evento não encontrado." }, { status: 404 });
-  if (!event.whatsapp_template_name || !event.whatsapp_reminder_message) {
-    return NextResponse.json({ success: false, message: "Configure o modelo aprovado e a mensagem no editor do evento." }, { status: 422 });
+  if (!event.whatsapp_template_name) {
+    return NextResponse.json({ success: false, message: "Configure o modelo aprovado no editor do evento." }, { status: 422 });
   }
   if (!eligible) return NextResponse.json({ success: false, message: "Não há inscritos confirmados com consentimento para comunicações." }, { status: 422 });
 

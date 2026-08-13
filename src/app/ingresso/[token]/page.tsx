@@ -12,7 +12,9 @@ export default async function TicketPage({ params }: PageProps<"/ingresso/[token
   const ticket = await getPublicTicket(token);
   if (!ticket) notFound();
 
-  const qrDataUrl = await createTicketQrDataUrl(ticket.ticketToken);
+  const qrDataUrl = ticket.status === "confirmed"
+    ? await createTicketQrDataUrl(ticket.ticketToken)
+    : null;
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-[#050506] px-5 py-10 sm:px-8 sm:py-16">

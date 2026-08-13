@@ -12,7 +12,6 @@ type EventRow = {
   city: string;
   whatsapp_template_name: string | null;
   whatsapp_template_language: string;
-  whatsapp_reminder_message: string | null;
 };
 
 type RegistrationRow = {
@@ -34,13 +33,13 @@ export async function sendEventWhatsAppReminder(eventId: string) {
 
   const supabase = createAdminClient();
   const [{ data: event, error: eventError }, { data: registrations, error: registrationsError }] = await Promise.all([
-    supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,whatsapp_template_name,whatsapp_template_language,whatsapp_reminder_message").eq("id", eventId).single<EventRow>(),
+    supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,whatsapp_template_name,whatsapp_template_language").eq("id", eventId).single<EventRow>(),
     supabase.from("registrations").select("id,full_name,phone,ticket_code,ticket_token").eq("event_id", eventId).eq("status", "confirmed").eq("communications_consent", true).order("registered_at", { ascending: true }).returns<RegistrationRow[]>(),
   ]);
   if (eventError) throw eventError;
   if (registrationsError) throw registrationsError;
-  if (!event.whatsapp_template_name || !event.whatsapp_reminder_message) {
-    throw new Error("Configure o modelo e a mensagem do WhatsApp no editor do evento.");
+  if (!event.whatsapp_template_name) {
+    throw new Error("Configure o modelo aprovado do WhatsApp no editor do evento.");
   }
 
   const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: event.timezone }).format(new Date(event.start_at));
@@ -81,7 +80,6 @@ export async function sendEventWhatsAppReminder(eventId: string) {
                 { type: "header", parameters: [{ type: "image", image: { link: `${baseUrl}/api/tickets/${encodeURIComponent(registration.ticket_token)}/qr` } }] },
                 { type: "body", parameters: [
                   { type: "text", text: firstName(registration.full_name) },
-                  { type: "text", text: event.whatsapp_reminder_message },
                   { type: "text", text: event.name },
                   { type: "text", text: eventDate },
                   { type: "text", text: eventTime },

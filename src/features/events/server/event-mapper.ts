@@ -19,7 +19,6 @@ export function toDatabaseValues(data: AdminEventInput) {
     whatsapp_group_url: data.whatsappGroupUrl,
     whatsapp_template_name: data.whatsappTemplateName,
     whatsapp_template_language: data.whatsappTemplateLanguage,
-    whatsapp_reminder_message: data.whatsappReminderMessage,
     registration_status: data.registrationStatus,
     registration_open_at: data.registrationOpenAt,
     registration_close_at: data.registrationCloseAt,

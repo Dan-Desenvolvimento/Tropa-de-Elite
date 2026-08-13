@@ -17,7 +17,9 @@ export default async function ConfirmationPage({
 
   const ticket = await getPublicTicket(token);
   if (!ticket || ticket.event.slug !== slug) notFound();
-  const qrDataUrl = await createTicketQrDataUrl(ticket.ticketToken);
+  const qrDataUrl = ticket.status === "confirmed"
+    ? await createTicketQrDataUrl(ticket.ticketToken)
+    : null;
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-[#050506] px-5 py-10 sm:px-8 sm:py-16">

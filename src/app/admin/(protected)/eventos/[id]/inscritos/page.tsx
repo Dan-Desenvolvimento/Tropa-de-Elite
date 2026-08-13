@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
 import { EventReminderButton } from "@/features/admin/components/event-reminder-button";
 import { WhatsAppReminderButton } from "@/features/admin/components/whatsapp-reminder-button";
+import { WaitlistPromotionButton } from "@/features/admin/components/waitlist-promotion-button";
 import { isPotentialBusinessOwner } from "@/features/checkin/strategic-profile";
 import { formatJobRole } from "@/features/registrations/job-roles";
 import { getEventPermissionSet } from "@/lib/auth/dal";
@@ -99,6 +100,8 @@ export default async function RegistrationsPage({
   const [
     { data, error },
     { data: event },
+    { count: confirmedCountResult },
+    { count: waitlistCountResult },
   ] = await Promise.all([
     supabase.rpc(
       "list_event_registrations_admin",
@@ -113,12 +116,23 @@ export default async function RegistrationsPage({
     ),
     admin
       .from("events")
-      .select("name,timezone")
+      .select("name,timezone,capacity")
       .eq("id", id)
       .maybeSingle<{
         name: string;
         timezone: string;
+        capacity: number | null;
       }>(),
+    admin
+      .from("registrations")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", id)
+      .eq("status", "confirmed"),
+    admin
+      .from("registrations")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", id)
+      .eq("status", "waitlist"),
   ]);
 
   if (error || !event) notFound();
@@ -132,6 +146,12 @@ export default async function RegistrationsPage({
     1,
     Math.ceil(total / pageSize),
   );
+  const confirmedCount = confirmedCountResult ?? 0;
+  const waitlistCount = waitlistCountResult ?? 0;
+  const availableSlots = event.capacity === null
+    ? waitlistCount
+    : Math.max(event.capacity - confirmedCount, 0);
+  const promotionCount = Math.min(waitlistCount, availableSlots);
 
   const hasHeaderActions =
     permissions.canViewReports ||
@@ -185,6 +205,22 @@ export default async function RegistrationsPage({
       />
 
       <div className="space-y-5 p-5 sm:p-8 lg:p-10">
+        {waitlistCount > 0 ? (
+          <section className="flex flex-col gap-4 rounded-2xl border border-amber-500/25 bg-amber-500/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold text-white">Gestão da lista de espera</p>
+              <p className="mt-1 text-sm leading-6 text-amber-100/70">
+                {waitlistCount} {waitlistCount === 1 ? "pessoa aguarda" : "pessoas aguardam"}. {promotionCount > 0
+                  ? `${promotionCount} ${promotionCount === 1 ? "vaga está disponível" : "vagas estão disponíveis"}; a promoção respeitará a ordem de inscrição.`
+                  : "Não há vagas livres. Aumente a capacidade no editor do evento e volte a esta tela."}
+              </p>
+            </div>
+            {permissions.canManageRegistrations && promotionCount > 0 ? (
+              <WaitlistPromotionButton eventId={id} promotionCount={promotionCount} />
+            ) : null}
+          </section>
+        ) : null}
+
         <form className="flex flex-col gap-3 rounded-2xl border border-white/8 bg-white/[0.025] p-4 sm:flex-row">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-600" />

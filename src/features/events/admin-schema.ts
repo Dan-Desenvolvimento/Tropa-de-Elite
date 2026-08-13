@@ -59,7 +59,6 @@ export const adminEventSchema = z
     whatsappGroupUrl: optionalWhatsAppUrl,
     whatsappTemplateName: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, "Use o nome técnico do modelo aprovado pela Meta.").nullish().transform((value) => value || null),
     whatsappTemplateLanguage: z.string().trim().regex(/^[a-z]{2,3}(?:_[A-Z]{2})?$/, "Informe um idioma válido, como pt_BR.").default("pt_BR"),
-    whatsappReminderMessage: z.string().trim().max(1000).nullish().transform((value) => value || null),
     registrationStatus: z.enum(["draft", "open", "closed", "sold_out", "finished", "cancelled"]),
     registrationOpenAt: z.string().datetime().nullable(),
     registrationCloseAt: z.string().datetime().nullable(),

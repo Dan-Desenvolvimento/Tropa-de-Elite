@@ -12,13 +12,12 @@ Crie um modelo de categoria **Utility/Utilidade**, idioma `pt_BR`, com:
 ```text
 Olá, {{1}}!
 
-{{2}}
+Este é um lembrete referente à sua inscrição confirmada no evento {{2}}.
 
-Evento: {{3}}
-Data: {{4}}
-Horário: {{5}}
-Local: {{6}}
-Código do ingresso: {{7}}
+Data: {{3}}
+Horário: {{4}}
+Local: {{5}}
+Código do ingresso: {{6}}
 
 Apresente o QR Code desta mensagem na entrada.
 ```
@@ -26,12 +25,11 @@ Apresente o QR Code desta mensagem na entrada.
 As variáveis enviadas são, nesta ordem:
 
 1. Primeiro nome.
-2. Texto editável no evento.
-3. Nome do evento.
-4. Data.
-5. Horário.
-6. Local e endereço.
-7. Código do ingresso.
+2. Nome do evento.
+3. Data.
+4. Horário.
+5. Local e endereço.
+6. Código do ingresso.
 
 O QR Code individual é enviado como imagem do cabeçalho.
 
@@ -53,7 +51,8 @@ Em **Evento → Comunicação**, informe:
 
 - Nome técnico exato do modelo aprovado.
 - Idioma, normalmente `pt_BR`.
-- Mensagem editável do lembrete.
+
+O conteúdo do corpo é controlado pelo modelo aprovado; o sistema preenche automaticamente as seis variáveis.
 
 ## 4. Disparo
 
