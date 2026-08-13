@@ -153,7 +153,9 @@ export function createWhatsAppReminderComponents({
       type: "button",
       sub_type: "url",
       index: "0",
-      parameters: [{ type: "text", text: ticketToken }],
+      // O modelo aprovado termina em `/ingresso` (sem barra). A variável
+      // dinâmica inclui a barra para formar `/ingresso/{token}`.
+      parameters: [{ type: "text", text: `/${ticketToken.replace(/^\/+/, "")}` }],
     },
   ];
 }

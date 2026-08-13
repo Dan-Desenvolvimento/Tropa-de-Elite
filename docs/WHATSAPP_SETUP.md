@@ -28,13 +28,13 @@ As variáveis enviadas são, nesta ordem:
 4. Horário.
 5. Local e endereço.
 
-Adicione um botão de URL dinâmica com o texto **VER MEU INGRESSO** e a base:
+Adicione um botão de URL dinâmica com o texto **VER MEU INGRESSO** e a base sem barra no final:
 
 ```text
-https://tropa.filipezetech.com/ingresso/
+https://tropa.filipezetech.com/ingresso
 ```
 
-O sistema envia o `ticket_token` individual como variável `{{1}}` do botão. O QR Code aparece somente na página segura do ingresso.
+O sistema envia `/<ticket_token>` como variável `{{1}}` do botão, formando corretamente `/ingresso/<ticket_token>`. O QR Code aparece somente na página segura do ingresso.
 
 No disparo, o cabeçalho usa sempre a imagem pública `cabecalho-whatsapp-evento.png`. Para trocar a arte, substitua esse arquivo em `public/` e faça um novo deploy.
 
