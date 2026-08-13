@@ -116,12 +116,13 @@ export default async function RegistrationsPage({
     ),
     admin
       .from("events")
-      .select("name,timezone,capacity")
+      .select("name,timezone,capacity,whatsapp_template_name")
       .eq("id", id)
       .maybeSingle<{
         name: string;
         timezone: string;
         capacity: number | null;
+        whatsapp_template_name: string | null;
       }>(),
     admin
       .from("registrations")
@@ -139,6 +140,24 @@ export default async function RegistrationsPage({
 
   const rows =
     (data ?? []) as RegistrationListRow[];
+  const registrationIds = rows.map((row) => row.registration_id);
+  const { data: consentedRegistrations } = registrationIds.length > 0
+    ? await admin
+        .from("registrations")
+        .select("id")
+        .in("id", registrationIds)
+        .eq("communications_consent", true)
+    : { data: [] as Array<{ id: string }> };
+  const consentedRegistrationIds = new Set(
+    (consentedRegistrations ?? []).map((registration) => registration.id),
+  );
+  const whatsappConfigured = Boolean(
+    event.whatsapp_template_name &&
+    process.env.WHATSAPP_PHONE_NUMBER_ID &&
+    process.env.WHATSAPP_ACCESS_TOKEN &&
+    process.env.WHATSAPP_API_VERSION &&
+    process.env.NEXT_PUBLIC_APP_URL,
+  );
   const total = Number(
     rows[0]?.total_count ?? 0,
   );
@@ -176,7 +195,11 @@ export default async function RegistrationsPage({
             <>
               {permissions.canManageRegistrations ? (
                 <>
-                  <WhatsAppReminderButton eventId={id} />
+                  <WhatsAppReminderButton
+                    eventId={id}
+                    disabled={!whatsappConfigured}
+                    disabledReason="Configure o modelo e a API do WhatsApp antes do disparo."
+                  />
                   <EventReminderButton eventId={id} available={reminderAvailable} />
                 </>
               ) : null}
@@ -407,6 +430,11 @@ export default async function RegistrationsPage({
                       canAnonymize={
                         permissions.canAnonymizeRegistrations
                       }
+                      canSendWhatsApp={Boolean(
+                        whatsappConfigured &&
+                        row.registration_status === "confirmed" &&
+                        consentedRegistrationIds.has(row.registration_id),
+                      )}
                     />
                   </td>
                 </tr>
