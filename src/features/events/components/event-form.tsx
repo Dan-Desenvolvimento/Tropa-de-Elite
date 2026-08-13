@@ -174,7 +174,7 @@ export function EventForm({
       <FormSection title="Comunicação">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Link do grupo de WhatsApp"><input name="whatsappGroupUrl" type="url" defaultValue={initial.whatsappGroupUrl ?? ""} className={inputClass} /></Field>
-          <Field label="Modelo aprovado no WhatsApp"><input name="whatsappTemplateName" defaultValue={initial.whatsappTemplateName ?? ""} placeholder="lembrete_evento_qr" className={inputClass} /></Field>
+          <Field label="Modelo aprovado no WhatsApp"><input name="whatsappTemplateName" defaultValue={initial.whatsappTemplateName ?? ""} placeholder="lembrete_inscricao_evento" className={inputClass} /></Field>
           <Field label="Idioma do modelo"><input name="whatsappTemplateLanguage" defaultValue={initial.whatsappTemplateLanguage ?? "pt_BR"} className={inputClass} /></Field>
           <Field label="E-mail de suporte"><input name="supportEmail" type="email" defaultValue={initial.supportEmail ?? ""} className={inputClass} /></Field>
           <Field label="Assunto do e-mail"><input name="emailSubject" defaultValue={initial.emailSubject ?? ""} className={inputClass} /></Field>
@@ -182,7 +182,7 @@ export function EventForm({
         </div>
         <Field label="Mensagem de confirmação"><textarea name="confirmationMessage" defaultValue={initial.confirmationMessage ?? ""} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /></Field>
         <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-xs leading-5 text-zinc-500">
-          O texto é controlado pelo modelo aprovado na Meta. O sistema preenche automaticamente, nesta ordem: nome do participante, evento, data, horário, local e código do ingresso. O QR Code individual é enviado como imagem do cabeçalho.
+          A imagem de capa do evento será usada no cabeçalho. O sistema preenche automaticamente nome, evento, data, horário e local. O botão recebe o token individual e abre a página segura do ingresso com QR Code.
         </div>
         {initial.id ? (
           <div className="rounded-2xl border border-white/10 bg-black/25 p-5">

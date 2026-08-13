@@ -64,13 +64,25 @@ export async function PATCH(
     .eq("id", id);
 
   if (error) {
+    console.error("Falha ao atualizar evento", {
+      eventId: id,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+
+    const message =
+      error.code === "23505"
+        ? "Este slug já está em uso."
+        : error.code === "2201B"
+          ? "A validação do nome do modelo WhatsApp no banco está desatualizada. Aplique a migration mais recente e tente novamente."
+          : "Não foi possível atualizar o evento. Tente novamente ou consulte o log do servidor.";
+
     return NextResponse.json(
       {
         success: false,
-        message:
-          error.code === "23505"
-            ? "Este slug já está em uso."
-            : "Não foi possível atualizar o evento.",
+        message,
       },
       {
         status: error.code === "23505" ? 409 : 500,

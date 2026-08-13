@@ -15,7 +15,7 @@ export function WhatsAppReminderButton({
   const [pending, setPending] = useState(false);
 
   async function send() {
-    if (!window.confirm("Enviar agora o lembrete com QR Code pelo WhatsApp para todos os inscritos confirmados que aceitaram comunicações?")) return;
+    if (!window.confirm("Enviar agora o lembrete com o link individual do ingresso pelo WhatsApp para todos os inscritos confirmados que aceitaram comunicações?")) return;
     setPending(true);
     const response = await fetch(`/api/admin/events/${eventId}/whatsapp-reminder`, { method: "POST" });
     const body = await response.json().catch(() => null) as { message?: string; data?: { eligible?: number } } | null;
@@ -26,7 +26,7 @@ export function WhatsAppReminderButton({
   return (
     <button type="button" onClick={() => void send()} disabled={disabled || pending} title={disabled ? disabledReason : "Enviar agora para os inscritos elegíveis"} className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-40">
       {pending ? <LoaderCircle className="size-4 animate-spin" /> : <MessageCircle className="size-4" />}
-      Enviar WhatsApp com QR
+      Enviar WhatsApp
     </button>
   );
 }

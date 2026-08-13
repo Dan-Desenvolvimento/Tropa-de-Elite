@@ -10,6 +10,7 @@ type EventRow = {
   venue_name: string;
   address: string;
   city: string;
+  cover_image_url: string | null;
   whatsapp_template_name: string | null;
   whatsapp_template_language: string;
 };
@@ -18,7 +19,6 @@ type RegistrationRow = {
   id: string;
   full_name: string;
   phone: string;
-  ticket_code: string;
   ticket_token: string;
 };
 
@@ -33,8 +33,8 @@ export async function sendEventWhatsAppReminder(eventId: string) {
 
   const supabase = createAdminClient();
   const [{ data: event, error: eventError }, { data: registrations, error: registrationsError }] = await Promise.all([
-    supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,whatsapp_template_name,whatsapp_template_language").eq("id", eventId).single<EventRow>(),
-    supabase.from("registrations").select("id,full_name,phone,ticket_code,ticket_token").eq("event_id", eventId).eq("status", "confirmed").eq("communications_consent", true).order("registered_at", { ascending: true }).returns<RegistrationRow[]>(),
+    supabase.from("events").select("id,name,start_at,timezone,venue_name,address,city,cover_image_url,whatsapp_template_name,whatsapp_template_language").eq("id", eventId).single<EventRow>(),
+    supabase.from("registrations").select("id,full_name,phone,ticket_token").eq("event_id", eventId).eq("status", "confirmed").eq("communications_consent", true).order("registered_at", { ascending: true }).returns<RegistrationRow[]>(),
   ]);
   if (eventError) throw eventError;
   if (registrationsError) throw registrationsError;
@@ -45,6 +45,7 @@ export async function sendEventWhatsAppReminder(eventId: string) {
   const eventDate = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: event.timezone }).format(new Date(event.start_at));
   const eventTime = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: event.timezone }).format(new Date(event.start_at));
   const baseUrl = appUrl.replace(/\/$/, "");
+  const headerImageUrl = event.cover_image_url || `${baseUrl}/tropa-hero-placeholder.png`;
   let sent = 0;
   let failed = 0;
   let skipped = 0;
@@ -58,7 +59,7 @@ export async function sendEventWhatsAppReminder(eventId: string) {
       const { data: log, error: logError } = await supabase.from("whatsapp_logs").insert({
         event_id: event.id,
         registration_id: registration.id,
-        message_type: "event_reminder_qr",
+        message_type: "event_reminder_ticket_link",
         recipient,
         status: "pending",
       }).select("id").single<{ id: string }>();
@@ -76,17 +77,15 @@ export async function sendEventWhatsAppReminder(eventId: string) {
             template: {
               name: event.whatsapp_template_name,
               language: { code: event.whatsapp_template_language },
-              components: [
-                { type: "header", parameters: [{ type: "image", image: { link: `${baseUrl}/api/tickets/${encodeURIComponent(registration.ticket_token)}/qr` } }] },
-                { type: "body", parameters: [
-                  { type: "text", text: firstName(registration.full_name) },
-                  { type: "text", text: event.name },
-                  { type: "text", text: eventDate },
-                  { type: "text", text: eventTime },
-                  { type: "text", text: `${event.venue_name} — ${event.address}, ${event.city}` },
-                  { type: "text", text: registration.ticket_code },
-                ] },
-              ],
+              components: createWhatsAppReminderComponents({
+                headerImageUrl,
+                participantName: registration.full_name,
+                eventName: event.name,
+                eventDate,
+                eventTime,
+                eventLocation: `${event.venue_name} — ${event.address}, ${event.city}`,
+                ticketToken: registration.ticket_token,
+              }),
             },
           }),
         });
@@ -102,6 +101,47 @@ export async function sendEventWhatsAppReminder(eventId: string) {
   }
 
   return { eligible: registrations?.length ?? 0, sent, failed, skipped };
+}
+
+export function createWhatsAppReminderComponents({
+  headerImageUrl,
+  participantName,
+  eventName,
+  eventDate,
+  eventTime,
+  eventLocation,
+  ticketToken,
+}: {
+  headerImageUrl: string;
+  participantName: string;
+  eventName: string;
+  eventDate: string;
+  eventTime: string;
+  eventLocation: string;
+  ticketToken: string;
+}) {
+  return [
+    {
+      type: "header",
+      parameters: [{ type: "image", image: { link: headerImageUrl } }],
+    },
+    {
+      type: "body",
+      parameters: [
+        { type: "text", text: firstName(participantName) },
+        { type: "text", text: eventName },
+        { type: "text", text: eventDate },
+        { type: "text", text: eventTime },
+        { type: "text", text: eventLocation },
+      ],
+    },
+    {
+      type: "button",
+      sub_type: "url",
+      index: "0",
+      parameters: [{ type: "text", text: ticketToken }],
+    },
+  ];
 }
 
 function firstName(fullName: string) {

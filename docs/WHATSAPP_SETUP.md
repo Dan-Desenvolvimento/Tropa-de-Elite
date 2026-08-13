@@ -1,4 +1,4 @@
-# Configuração do disparo de WhatsApp com QR Code
+# Configuração do disparo de WhatsApp com link do ingresso
 
 O sistema envia mensagens pela WhatsApp Cloud API somente para inscrições `confirmed` com `communications_consent = true`.
 
@@ -6,7 +6,7 @@ O sistema envia mensagens pela WhatsApp Cloud API somente para inscrições `con
 
 Crie um modelo de categoria **Utility/Utilidade**, idioma `pt_BR`, com:
 
-- Cabeçalho: **Imagem**.
+- Cabeçalho: **Imagem** do evento, sem QR Code.
 - Corpo:
 
 ```text
@@ -17,9 +17,7 @@ Este é um lembrete referente à sua inscrição confirmada no evento {{2}}.
 Data: {{3}}
 Horário: {{4}}
 Local: {{5}}
-Código do ingresso: {{6}}
-
-Apresente o QR Code desta mensagem na entrada.
+Seu ingresso individual está disponível no botão abaixo. Apresente-o na entrada do evento.
 ```
 
 As variáveis enviadas são, nesta ordem:
@@ -29,9 +27,16 @@ As variáveis enviadas são, nesta ordem:
 3. Data.
 4. Horário.
 5. Local e endereço.
-6. Código do ingresso.
 
-O QR Code individual é enviado como imagem do cabeçalho.
+Adicione um botão de URL dinâmica com o texto **VER MEU INGRESSO** e a base:
+
+```text
+https://tropa.filipezetech.com/ingresso/
+```
+
+O sistema envia o `ticket_token` individual como variável `{{1}}` do botão. O QR Code aparece somente na página segura do ingresso.
+
+No disparo, o cabeçalho usa a **Imagem de capa** configurada no editor do evento. Se não houver capa, o sistema usa a imagem pública padrão `tropa-hero-placeholder.png`.
 
 ## 2. Variáveis da Vercel
 
@@ -52,8 +57,8 @@ Em **Evento → Comunicação**, informe:
 - Nome técnico exato do modelo aprovado.
 - Idioma, normalmente `pt_BR`.
 
-O conteúdo do corpo é controlado pelo modelo aprovado; o sistema preenche automaticamente as seis variáveis.
+O conteúdo do corpo é controlado pelo modelo aprovado; o sistema preenche automaticamente as cinco variáveis e o botão individual.
 
 ## 4. Disparo
 
-Em **Evento → Inscritos**, clique em **Enviar WhatsApp com QR** e confirme. Repetir o clique não reenvia para registros já enviados ou em processamento.
+Em **Evento → Inscritos**, clique em **Enviar WhatsApp** e confirme. Repetir o clique não reenvia para registros já enviados ou em processamento.
