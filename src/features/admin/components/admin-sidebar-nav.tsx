@@ -6,6 +6,7 @@ import {
   History,
   KeyRound,
   LayoutDashboard,
+  MessageCircle,
   ScanLine,
   Settings,
   UsersRound,
@@ -100,6 +101,17 @@ export function AdminSidebarNav({
       )
     ) {
       return `/admin/eventos/${event.id}/inscritos`;
+    }
+
+    if (
+      preferredSection === "comunicacao" &&
+      (
+        event.canEditEvent ||
+        event.canManageRegistrations ||
+        event.canViewReports
+      )
+    ) {
+      return `/admin/eventos/${event.id}/comunicacao`;
     }
 
     if (
@@ -223,6 +235,18 @@ export function AdminSidebarNav({
               </SidebarLink>
             ) : null}
 
+            {selectedEvent.canEditEvent ||
+            selectedEvent.canManageRegistrations ||
+            selectedEvent.canViewReports ? (
+              <SidebarLink
+                href={eventHref("comunicacao")}
+                icon={MessageCircle}
+                active={eventSection === "comunicacao"}
+              >
+                Comunicação
+              </SidebarLink>
+            ) : null}
+
             {selectedEvent.canViewReports ? (
               <SidebarLink
                 href={eventHref("relatorios")}
@@ -319,6 +343,9 @@ function getEventSection(pathname: string) {
   }
   if (/\/inscritos(?:\/|$)/.test(pathname)) {
     return "inscritos";
+  }
+  if (/\/comunicacao(?:\/|$)/.test(pathname)) {
+    return "comunicacao";
   }
   if (/\/relatorios(?:\/|$)/.test(pathname)) {
     return "relatorios";

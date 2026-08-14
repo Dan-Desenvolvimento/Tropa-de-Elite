@@ -31,6 +31,8 @@ Sistema de produção para criar eventos, receber inscrições, emitir ingressos
 - check-in transacional contra leituras simultâneas;
 - CSV UTF-8 com BOM e separador compatível com Excel brasileiro;
 - logs de check-in, e-mail e auditoria;
+- central visual para configurar modelos, variáveis, testes e disparos do WhatsApp;
+- histórico separado por comunicação com aceites, entregas, leituras e falhas;
 - histórico administrativo filtrável por evento;
 - endpoint `/api/health`.
 
@@ -71,6 +73,11 @@ TURNSTILE_SECRET_KEY=
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` e os segredos nunca podem usar o prefixo `NEXT_PUBLIC_`.
+
+Para a integração com WhatsApp Cloud API, preencha também `WHATSAPP_PHONE_NUMBER_ID`,
+`WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_API_VERSION`, `WHATSAPP_APP_SECRET` e
+`WHATSAPP_WEBHOOK_VERIFY_TOKEN`. Todos são segredos de servidor e não devem usar o
+prefixo `NEXT_PUBLIC_`.
 
 Gere os segredos com um gerador criptográfico. Exemplo em PowerShell:
 
@@ -194,6 +201,27 @@ Há intervalo mínimo entre reenvios e a resposta pública nunca confirma se o e
 ### Exportar participantes
 
 Abra **Evento → Inscritos → Exportar CSV**. O arquivo contém dados, status, presença e respostas personalizadas.
+
+### Configurar comunicações pelo WhatsApp
+
+Depois de aplicar as migrations e configurar a Cloud API, abra **Evento → Comunicação**.
+Cada mensagem corresponde a um modelo previamente aprovado na Meta. O assistente permite:
+
+1. informar o nome técnico e o idioma exatos do modelo aprovado;
+2. colar o corpo do modelo para identificar marcadores como `{{1}}`, `{{2}}` e `{{3}}`;
+3. escolher visualmente qual informação preenche cada marcador;
+4. configurar a imagem do cabeçalho, a URL-base aprovada na Meta e o complemento de um botão dinâmico;
+5. revisar a prévia, enviar para uma pessoa de teste e iniciar o disparo em massa;
+6. acompanhar o resultado de cada disparo separadamente.
+
+O público é sempre limitado a inscrições confirmadas, com consentimento para comunicações
+e telefone válido. A interface informa quantas pessoas ficaram de fora e o respectivo motivo
+antes de confirmar o envio.
+
+Para ativar a Central em um ambiente já existente, aplique a migration
+`0024_configurable_whatsapp_communications.sql` e faça um novo deploy. A migration
+preserva o modelo legado já cadastrado e cria automaticamente a comunicação
+“Lembrete com ingresso” para os eventos que já possuem um modelo do WhatsApp.
 
 ## Testes e qualidade
 

@@ -1,11 +1,11 @@
 "use client";
 
-import { LoaderCircle, Save } from "lucide-react";
+import { ArrowRight, CircleCheck, LoaderCircle, MessageSquareMore, Save } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import type { EventCustomField } from "@/features/events/types";
-import { WhatsAppReminderButton } from "@/features/admin/components/whatsapp-reminder-button";
 
 type EventFormValues = {
   id?: string;
@@ -172,42 +172,61 @@ export function EventForm({
       </FormSection>
 
       <FormSection title="Comunicação">
+        <input
+          type="hidden"
+          name="whatsappTemplateName"
+          value={initial.whatsappTemplateName ?? ""}
+        />
+        <input
+          type="hidden"
+          name="whatsappTemplateLanguage"
+          value={initial.whatsappTemplateLanguage ?? "pt_BR"}
+        />
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Link do grupo de WhatsApp"><input name="whatsappGroupUrl" type="url" defaultValue={initial.whatsappGroupUrl ?? ""} className={inputClass} /></Field>
-          <Field label="Modelo aprovado no WhatsApp"><input name="whatsappTemplateName" defaultValue={initial.whatsappTemplateName ?? ""} placeholder="lembrete_inscricao_evento" className={inputClass} /></Field>
-          <Field label="Idioma do modelo"><input name="whatsappTemplateLanguage" defaultValue={initial.whatsappTemplateLanguage ?? "pt_BR"} className={inputClass} /></Field>
           <Field label="E-mail de suporte"><input name="supportEmail" type="email" defaultValue={initial.supportEmail ?? ""} className={inputClass} /></Field>
           <Field label="Assunto do e-mail"><input name="emailSubject" defaultValue={initial.emailSubject ?? ""} className={inputClass} /></Field>
           <Field label="Política de Privacidade (URL)"><input name="privacyPolicyUrl" type="url" defaultValue={initial.privacyPolicyUrl ?? ""} className={inputClass} /></Field>
         </div>
         <Field label="Mensagem de confirmação"><textarea name="confirmationMessage" defaultValue={initial.confirmationMessage ?? ""} rows={3} className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none focus:border-red-500/60" /></Field>
-        <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-xs leading-5 text-zinc-500">
-          O cabeçalho usa a imagem pública cabecalho-whatsapp-evento.png. O sistema preenche automaticamente nome, evento, data, horário e local. O botão recebe o token individual e abre a página segura do ingresso com QR Code.
-        </div>
         {initial.id ? (
-          <div className="rounded-2xl border border-white/10 bg-black/25 p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`size-2.5 rounded-full ${whatsappApiConfigured ? "bg-emerald-400" : "bg-amber-400"}`} />
-                  <p className="font-semibold text-white">API do WhatsApp {whatsappApiConfigured ? "configurada" : "ainda não configurada"}</p>
+          <div className="overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-black/25 to-black/25">
+            <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+              <div className="flex gap-4">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+                  <MessageSquareMore className="size-5" />
                 </div>
-                <p className="mt-2 max-w-2xl text-xs leading-5 text-zinc-500">
-                  {whatsappApiConfigured
-                    ? "Salve o evento antes do disparo. O envio considera apenas inscritos confirmados que aceitaram receber comunicações."
-                    : "Adicione WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_ACCESS_TOKEN e WHATSAPP_API_VERSION na Vercel e faça um novo deploy."}
-                </p>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-semibold text-white">Central de Comunicação</p>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${whatsappApiConfigured ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300"}`}>
+                      {whatsappApiConfigured ? <CircleCheck className="size-3" /> : null}
+                      WhatsApp {whatsappApiConfigured ? "conectado" : "não conectado"}
+                    </span>
+                  </div>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+                    Crie mensagens, escolha as informações que preenchem cada variável, confira a prévia e faça disparos de teste ou em massa em um fluxo guiado.
+                  </p>
+                </div>
               </div>
               {canSendWhatsApp ? (
-                <WhatsAppReminderButton
-                  eventId={initial.id}
-                  disabled={!whatsappApiConfigured || !initial.whatsappTemplateName}
-                  disabledReason={!whatsappApiConfigured ? "Configure a API na Vercel." : "Salve o nome do modelo aprovado antes do disparo."}
-                />
-              ) : null}
+                <Link
+                  href={`/admin/eventos/${initial.id}/comunicacao`}
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black transition hover:bg-emerald-400"
+                >
+                  Abrir Central
+                  <ArrowRight className="size-4" />
+                </Link>
+              ) : (
+                <p className="text-xs text-zinc-500">Seu perfil não possui permissão para gerenciar disparos.</p>
+              )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-sm leading-6 text-zinc-500">
+            Salve o evento para liberar a Central de Comunicação e configurar as mensagens do WhatsApp.
+          </div>
+        )}
       </FormSection>
 
       {error ? <div role="alert" className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-200">{error}</div> : null}

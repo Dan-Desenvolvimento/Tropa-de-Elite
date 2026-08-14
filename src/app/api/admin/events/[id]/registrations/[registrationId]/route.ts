@@ -132,6 +132,27 @@ export async function PATCH(
             checkin_method: null,
           };
 
+  if (parsed.data.action === "anonymize") {
+    const anonymousRecipient = `anon-${createHash("sha256")
+      .update(`whatsapp:${registrationId}`)
+      .digest("hex")
+      .slice(0, 16)}`;
+    const { error: whatsappLogsError } = await supabase
+      .from("whatsapp_logs")
+      .update({ recipient: anonymousRecipient })
+      .eq("event_id", id)
+      .eq("registration_id", registrationId);
+    if (whatsappLogsError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Não foi possível limpar os dados pessoais dos registros do WhatsApp.",
+        },
+        { status: 500 },
+      );
+    }
+  }
+
   const { error } = await supabase
     .from("registrations")
     .update(values)

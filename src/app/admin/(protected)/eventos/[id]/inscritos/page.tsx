@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Download,
+  MessageSquareMore,
   ScanLine,
   Search,
 } from "lucide-react";
@@ -9,7 +10,6 @@ import {
 import { PageHeader } from "@/components/admin/page-header";
 import { RegistrationActions } from "@/features/admin/components/registration-actions";
 import { EventReminderButton } from "@/features/admin/components/event-reminder-button";
-import { WhatsAppReminderButton } from "@/features/admin/components/whatsapp-reminder-button";
 import { WaitlistPromotionButton } from "@/features/admin/components/waitlist-promotion-button";
 import { isPotentialBusinessOwner } from "@/features/checkin/strategic-profile";
 import { formatJobRole } from "@/features/registrations/job-roles";
@@ -195,11 +195,13 @@ export default async function RegistrationsPage({
             <>
               {permissions.canManageRegistrations ? (
                 <>
-                  <WhatsAppReminderButton
-                    eventId={id}
-                    disabled={!whatsappConfigured}
-                    disabledReason="Configure o modelo e a API do WhatsApp antes do disparo."
-                  />
+                  <Link
+                    href={`/admin/eventos/${id}/comunicacao`}
+                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/10"
+                  >
+                    <MessageSquareMore className="size-4" />
+                    Central de Comunicação
+                  </Link>
                   <EventReminderButton eventId={id} available={reminderAvailable} />
                 </>
               ) : null}
