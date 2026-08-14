@@ -6,6 +6,7 @@ import {
   findRecoverableDispatchIds,
   processDispatch,
 } from "@/features/whatsapp/server/dispatch-service";
+import { toSafeDispatchError } from "@/features/whatsapp/dispatch-error";
 import {
   getCurrentStaff,
   hasAnyEventPermission,
@@ -291,12 +292,19 @@ export async function POST(
       { status: dispatch.created ? 202 : 200 },
     );
   } catch (error) {
+    const safeError = toSafeDispatchError(error);
+    console.error("Falha ao registrar disparo configurável do WhatsApp", {
+      eventId: id,
+      messageConfigId: messageId,
+      scope: parsed.data.scope,
+      ...safeError.technical,
+    });
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Não foi possível iniciar o envio.",
+        message: safeError.publicMessage,
       },
-      { status: 409 },
+      { status: safeError.status },
     );
   }
 }
