@@ -390,7 +390,13 @@ function MessagesPanel({
             />
             <InfoBlock
               label="Cabeçalho"
-              value={message.headerKind === "image" ? "Com imagem" : "Somente texto"}
+              value={
+                message.headerKind === "image"
+                  ? "Com imagem"
+                  : message.headerKind === "video"
+                    ? "Com vídeo"
+                    : "Somente texto"
+              }
             />
             <InfoBlock
               label="Botão"
@@ -729,6 +735,7 @@ function MessageActionModal({
               <>
                 <WhatsAppPreview
                   body={preview.body}
+                  headerKind={preview.headerKind}
                   headerMediaUrl={preview.headerMediaUrl}
                   buttonLabel={preview.buttonLabel}
                   buttonUrl={preview.buttonUrl}

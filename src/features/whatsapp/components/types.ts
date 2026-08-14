@@ -10,7 +10,7 @@ export type MessageConfig = {
   templateName: string;
   templateLanguage: string;
   previewBody: string;
-  headerKind: "none" | "image";
+  headerKind: "none" | "image" | "video";
   headerMediaUrl: string | null;
   bodyVariables: WhatsAppBodyVariable[];
   buttonConfig: WhatsAppButtonConfig;
@@ -40,6 +40,7 @@ export type MessagePreview = {
     phone: string;
   };
   body: string;
+  headerKind: "none" | "image" | "video";
   headerMediaUrl: string | null;
   buttonLabel: string | null;
   buttonUrl: string | null;

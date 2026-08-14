@@ -4,13 +4,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Film,
   ImagePlus,
   LoaderCircle,
   Save,
   Sparkles,
+  Upload,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
   configuredButtonExample,
@@ -26,11 +28,12 @@ import type {
   MessageDraft,
 } from "@/features/whatsapp/components/types";
 import { WhatsAppPreview } from "@/features/whatsapp/components/whatsapp-preview";
+import { createClient } from "@/lib/supabase/client";
 
 const steps = [
   { title: "Objetivo", description: "Como sua equipe reconhecerá a mensagem" },
   { title: "Modelo Meta", description: "Os dados do modelo que foi aprovado" },
-  { title: "Aparência", description: "Imagem que acompanha a comunicação" },
+  { title: "Aparência", description: "Imagem ou vídeo que acompanha a comunicação" },
   { title: "Variáveis", description: "O que entra em cada espaço {{n}}" },
   { title: "Revisão", description: "Confira tudo antes de salvar" },
 ];
@@ -80,6 +83,10 @@ export function MessageWizard({
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const mediaByKind = useRef<{ image: string | null; video: string | null }>({
+    image: initial?.headerKind === "image" ? initial.headerMediaUrl : null,
+    video: initial?.headerKind === "video" ? initial.headerMediaUrl : null,
+  });
 
   const positions = useMemo(
     () => extractVariablePositions(draft.previewBody),
@@ -138,10 +145,12 @@ export function MessageWizard({
     }
     if (
       step === 2 &&
-      draft.headerKind === "image" &&
+      draft.headerKind !== "none" &&
       !draft.headerMediaUrl
     ) {
-      return "Envie a imagem que será usada no cabeçalho.";
+      return draft.headerKind === "video"
+        ? "Envie o vídeo MP4 que será usado no cabeçalho."
+        : "Envie a imagem que será usada no cabeçalho.";
     }
     if (step === 3) {
       if (draft.bodyVariables.length !== positions.length) {
@@ -182,29 +191,116 @@ export function MessageWizard({
     setError(null);
   }
 
-  async function uploadImage(file: File) {
-    setUploading(true);
-    setError(null);
-    const body = new FormData();
-    body.set("file", file);
-    const response = await fetch(`/api/admin/events/${eventId}/whatsapp-media`, {
-      method: "POST",
-      body,
-    });
-    const result = (await response.json().catch(() => null)) as
-      | { success: true; data: { url: string } }
-      | { success: false; message: string }
-      | null;
-    setUploading(false);
-    if (!response.ok || !result?.success) {
+  function selectHeaderKind(kind: MessageDraft["headerKind"]) {
+    if (draft.headerKind !== "none") {
+      mediaByKind.current[draft.headerKind] = draft.headerMediaUrl;
+    }
+    update("headerKind", kind);
+    update(
+      "headerMediaUrl",
+      kind === "none" ? null : mediaByKind.current[kind],
+    );
+  }
+
+  async function uploadMedia(file: File) {
+    const isVideo = draft.headerKind === "video";
+    const allowed = isVideo
+      ? file.type === "video/mp4" && file.size <= 16 * 1024 * 1024
+      : ["image/png", "image/jpeg"].includes(file.type) &&
+        file.size <= 5 * 1024 * 1024;
+    if (!allowed || file.size <= 0) {
       setError(
-        result && !result.success
-          ? result.message
-          : "Não foi possível enviar a imagem.",
+        isVideo
+          ? "Use um vídeo MP4 de até 16 MB, preferencialmente H.264 com áudio AAC ou sem áudio."
+          : "Use uma imagem PNG ou JPG de até 5 MB.",
       );
       return;
     }
-    update("headerMediaUrl", result.data.url);
+
+    setUploading(true);
+    setError(null);
+    try {
+      const prepareResponse = await fetch(`/api/admin/events/${eventId}/whatsapp-media`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "prepare",
+          fileName: file.name,
+          contentType: file.type,
+          size: file.size,
+        }),
+      });
+      const prepared = (await prepareResponse.json().catch(() => null)) as
+        | {
+            success: true;
+            data: {
+              path: string;
+              token: string;
+              signedUrl: string;
+              kind: "image" | "video";
+            };
+          }
+        | { success: false; message: string }
+        | null;
+      if (!prepareResponse.ok || !prepared?.success) {
+        setError(
+          prepared && !prepared.success
+            ? prepared.message
+            : `Não foi possível preparar ${isVideo ? "o vídeo" : "a imagem"} para envio.`,
+        );
+        return;
+      }
+      if (prepared.data.kind !== draft.headerKind) {
+        setError(
+          `O arquivo foi reconhecido como ${prepared.data.kind === "video" ? "vídeo" : "imagem"}, mas o cabeçalho está configurado como ${isVideo ? "vídeo" : "imagem"}.`,
+        );
+        return;
+      }
+
+      const { error: uploadError } = await createClient()
+        .storage
+        .from("whatsapp-media")
+        .uploadToSignedUrl(prepared.data.path, prepared.data.token, file, {
+          contentType: file.type,
+        });
+      if (uploadError) {
+        setError(
+          `Não foi possível enviar ${isVideo ? "o vídeo" : "a imagem"} para o armazenamento. Tente novamente.`,
+        );
+        return;
+      }
+
+      const finalizeResponse = await fetch(`/api/admin/events/${eventId}/whatsapp-media`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "finalize", path: prepared.data.path }),
+      });
+      const finalized = (await finalizeResponse.json().catch(() => null)) as
+        | { success: true; data: { url: string; kind: "image" | "video" } }
+        | { success: false; message: string }
+        | null;
+      if (!finalizeResponse.ok || !finalized?.success) {
+        setError(
+          finalized && !finalized.success
+            ? finalized.message
+            : "O arquivo foi enviado, mas não foi possível concluir a preparação. Tente novamente.",
+        );
+        return;
+      }
+      if (finalized.data.kind !== draft.headerKind) {
+        setError("O tipo de mídia finalizado não corresponde ao cabeçalho escolhido.");
+        return;
+      }
+
+      mediaByKind.current[isVideo ? "video" : "image"] = finalized.data.url;
+      update("headerMediaUrl", finalized.data.url);
+    } catch {
+      setError(
+        `A conexão foi interrompida durante o envio ${isVideo ? "do vídeo" : "da imagem"}. Tente novamente.`,
+      );
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function save() {
@@ -332,9 +428,9 @@ export function MessageWizard({
                 ) : step === 2 ? (
                   <AppearanceStep
                     draft={draft}
-                    update={update}
                     uploading={uploading}
-                    uploadImage={uploadImage}
+                    selectHeaderKind={selectHeaderKind}
+                    uploadMedia={uploadMedia}
                   />
                 ) : step === 3 ? (
                   <VariablesStep draft={draft} update={update} />
@@ -496,64 +592,140 @@ function TemplateStep({
 
 function AppearanceStep({
   draft,
-  update,
   uploading,
-  uploadImage,
+  selectHeaderKind,
+  uploadMedia,
 }: {
   draft: MessageDraft;
-  update: UpdateDraft;
   uploading: boolean;
-  uploadImage: (file: File) => Promise<void>;
+  selectHeaderKind: (kind: MessageDraft["headerKind"]) => void;
+  uploadMedia: (file: File) => Promise<void>;
 }) {
+  const isVideo = draft.headerKind === "video";
+  const hasMedia = Boolean(draft.headerMediaUrl);
+
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <ChoiceCard
           active={draft.headerKind === "none"}
-          title="Sem imagem"
+          title="Sem mídia"
           description="Use quando o modelo aprovado possui apenas texto."
-          onClick={() => {
-            update("headerKind", "none");
-            update("headerMediaUrl", null);
-          }}
+          onClick={() => selectHeaderKind("none")}
+          disabled={uploading}
         />
         <ChoiceCard
           active={draft.headerKind === "image"}
           title="Imagem no cabeçalho"
           description="Ideal para mapa, identidade do evento ou orientação visual."
-          onClick={() => update("headerKind", "image")}
+          onClick={() => selectHeaderKind("image")}
+          disabled={uploading}
+        />
+        <ChoiceCard
+          active={draft.headerKind === "video"}
+          title="Vídeo no cabeçalho"
+          description="Use exatamente quando o modelo aprovado na Meta possui vídeo."
+          onClick={() => selectHeaderKind("video")}
+          disabled={uploading}
         />
       </div>
 
-      {draft.headerKind === "image" ? (
+      {draft.headerKind !== "none" ? (
         <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-5">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white/15">
-              {uploading ? <LoaderCircle className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
-              {uploading ? "Enviando imagem" : "Escolher imagem"}
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                disabled={uploading}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) void uploadImage(file);
-                  event.currentTarget.value = "";
-                }}
-                className="sr-only"
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
+            <div>
+              <div className="flex items-start gap-3">
+                <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${isVideo ? "bg-violet-500/10 text-violet-300" : "bg-sky-500/10 text-sky-300"}`}>
+                  {isVideo ? <Film className="size-4.5" /> : <ImagePlus className="size-4.5" />}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {isVideo ? "Vídeo aprovado pela Meta" : "Imagem aprovada pela Meta"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-zinc-500">
+                    {isVideo
+                      ? "Somente MP4, até 16 MB. Recomendamos H.264 com um único áudio AAC ou sem áudio."
+                      : "PNG ou JPG, até 5 MB. Prefira formato horizontal para evitar cortes no WhatsApp."}
+                  </p>
+                </div>
+              </div>
+
+              <label className="mt-5 inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white/15 has-[:disabled]:cursor-wait has-[:disabled]:opacity-60">
+                {uploading ? <LoaderCircle className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                {uploading
+                  ? `Enviando ${isVideo ? "vídeo" : "imagem"}`
+                  : hasMedia
+                    ? `Trocar ${isVideo ? "vídeo" : "imagem"}`
+                    : `Escolher ${isVideo ? "vídeo" : "imagem"}`}
+                <input
+                  type="file"
+                  accept={isVideo ? "video/mp4,.mp4" : "image/png,image/jpeg,.png,.jpg,.jpeg"}
+                  disabled={uploading}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void uploadMedia(file);
+                    event.currentTarget.value = "";
+                  }}
+                  className="sr-only"
+                />
+              </label>
+            </div>
+
+            {draft.headerMediaUrl ? (
+              <MediaThumb
+                kind={draft.headerKind}
+                url={draft.headerMediaUrl}
               />
-            </label>
-            <p className="text-xs leading-5 text-zinc-500">
-              PNG ou JPG, até 5 MB. Prefira formato horizontal para evitar cortes no WhatsApp.
-            </p>
+            ) : (
+              <div className="flex aspect-video items-center justify-center rounded-2xl border border-white/8 bg-white/[0.02] text-xs text-zinc-700">
+                A prévia aparecerá aqui
+              </div>
+            )}
           </div>
-          {draft.headerMediaUrl ? (
-            <p className="mt-4 truncate rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-emerald-300">
-              Imagem carregada e pronta para uso.
-            </p>
+          {hasMedia ? (
+            <div className="mt-5 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-emerald-300">
+              <Check className="size-4 shrink-0" />
+              {isVideo ? "Vídeo" : "Imagem"} carregado e pronto para uso.
+            </div>
           ) : null}
         </div>
       ) : null}
+
+      <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4 text-xs leading-5 text-amber-100/70">
+        O tipo escolhido precisa ser igual ao cabeçalho do modelo aprovado na Meta. Um modelo de imagem não aceita vídeo, e um modelo de vídeo não aceita imagem.
+      </div>
+    </div>
+  );
+}
+
+function MediaThumb({
+  kind,
+  url,
+}: {
+  kind: Exclude<MessageDraft["headerKind"], "none">;
+  url: string;
+}) {
+  return (
+    <div className="relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black">
+      {kind === "video" ? (
+        <video
+          src={url}
+          controls
+          playsInline
+          preload="metadata"
+          {...{ referrerPolicy: "no-referrer" }}
+          className="size-full object-contain"
+          aria-label="Prévia do vídeo selecionado"
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt="Prévia da imagem selecionada"
+          referrerPolicy="no-referrer"
+          className="size-full object-cover"
+        />
+      )}
     </div>
   );
 }
@@ -799,7 +971,13 @@ function ReviewStep({
         <ReviewRow label="Idioma" value={draft.templateLanguage} />
         <ReviewRow
           label="Cabeçalho"
-          value={draft.headerKind === "image" ? "Imagem" : "Sem imagem"}
+          value={
+            draft.headerKind === "image"
+              ? "Imagem"
+              : draft.headerKind === "video"
+                ? "Vídeo MP4"
+                : "Sem mídia"
+          }
         />
         <ReviewRow
           label="Variáveis"
@@ -823,6 +1001,7 @@ function ReviewStep({
       </div>
       <WhatsAppPreview
         body={previewBody}
+        headerKind={draft.headerKind}
         headerMediaUrl={draft.headerMediaUrl}
         buttonLabel={buttonLabel}
         buttonUrl={
@@ -860,18 +1039,21 @@ function ChoiceCard({
   description,
   onClick,
   small = false,
+  disabled = false,
 }: {
   active: boolean;
   title: string;
   description: string;
   onClick: () => void;
   small?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border text-left transition ${small ? "p-4" : "p-5"} ${
+      disabled={disabled}
+      className={`rounded-2xl border text-left transition disabled:cursor-wait disabled:opacity-50 ${small ? "p-4" : "p-5"} ${
         active
           ? "border-red-500/40 bg-red-500/10"
           : "border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]"

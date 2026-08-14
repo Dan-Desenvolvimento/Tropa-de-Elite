@@ -16,7 +16,7 @@ export function toMessageConfigDatabaseValues(
     preview_body: input.previewBody,
     header_kind: input.headerKind,
     header_media_url:
-      input.headerKind === "image"
+      input.headerKind !== "none"
         ? input.headerMediaUrl
         : null,
     body_variables: input.bodyVariables,

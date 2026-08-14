@@ -100,6 +100,30 @@ describe("configured WhatsApp message", () => {
     );
   });
 
+  it("monta cabeçalho de vídeo com link público", () => {
+    const [header] = createConfiguredMessageComponents({
+      config: {
+        ...config,
+        header_kind: "video",
+        header_media_url: "/whatsapp-media/video.mp4",
+      },
+      event,
+      registration,
+      appUrl: "https://tropa.filipezetech.com/",
+    });
+    expect(header).toEqual({
+      type: "header",
+      parameters: [
+        {
+          type: "video",
+          video: {
+            link: "https://tropa.filipezetech.com/whatsapp-media/video.mp4",
+          },
+        },
+      ],
+    });
+  });
+
   it("bloqueia envio sem consentimento", () => {
     expect(() =>
       assertEligibleRegistration({

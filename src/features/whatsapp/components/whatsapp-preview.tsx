@@ -2,12 +2,14 @@ import { CheckCheck, ExternalLink } from "lucide-react";
 
 export function WhatsAppPreview({
   body,
+  headerKind = "image",
   headerMediaUrl,
   buttonLabel,
   buttonUrl = null,
   compact = false,
 }: {
   body: string;
+  headerKind?: "none" | "image" | "video";
   headerMediaUrl: string | null;
   buttonLabel: string | null;
   buttonUrl?: string | null;
@@ -31,15 +33,29 @@ export function WhatsAppPreview({
         <div className="ml-auto max-w-[94%] overflow-hidden rounded-xl rounded-tr-sm bg-[#202c33] shadow-lg">
           {headerMediaUrl ? (
             <div className="relative aspect-[1.91/1] w-full overflow-hidden bg-zinc-900">
-              {/* A mídia vem de um bucket público configurável; a prévia não deve depender
-                  da lista de domínios do otimizador do Next.js. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={headerMediaUrl}
-                alt="Cabeçalho da mensagem"
-                referrerPolicy="no-referrer"
-                className="size-full object-cover"
-              />
+              {headerKind === "video" ? (
+                <video
+                  src={headerMediaUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  {...{ referrerPolicy: "no-referrer" }}
+                  className="size-full bg-black object-contain"
+                  aria-label="Vídeo do cabeçalho da mensagem"
+                />
+              ) : (
+                <>
+                  {/* A mídia vem de um bucket público configurável; a prévia não deve depender
+                      da lista de domínios do otimizador do Next.js. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={headerMediaUrl}
+                    alt="Cabeçalho da mensagem"
+                    referrerPolicy="no-referrer"
+                    className="size-full object-cover"
+                  />
+                </>
+              )}
             </div>
           ) : null}
 

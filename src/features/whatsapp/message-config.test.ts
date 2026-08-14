@@ -85,6 +85,26 @@ describe("whatsappMessageConfigSchema", () => {
     ).toBe(false);
   });
 
+  it("aceita cabeçalho de vídeo com URL HTTPS", () => {
+    expect(
+      whatsappMessageConfigSchema.safeParse({
+        ...validMessage,
+        headerKind: "video",
+        headerMediaUrl: "https://tropa.filipezetech.com/video.mp4",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("exige mídia quando o cabeçalho é vídeo", () => {
+    expect(
+      whatsappMessageConfigSchema.safeParse({
+        ...validMessage,
+        headerKind: "video",
+        headerMediaUrl: null,
+      }).success,
+    ).toBe(false);
+  });
+
   it("recusa URL-base insegura no botão dinâmico", () => {
     expect(
       whatsappMessageConfigSchema.safeParse({

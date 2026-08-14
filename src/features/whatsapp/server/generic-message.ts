@@ -47,13 +47,14 @@ export function createConfiguredMessageComponents({
   assertEligibleRegistration(registration);
   const components: Array<Record<string, unknown>> = [];
 
-  if (config.header_kind === "image" && config.header_media_url) {
+  if (config.header_kind !== "none" && config.header_media_url) {
+    const mediaType = config.header_kind;
     components.push({
       type: "header",
       parameters: [
         {
-          type: "image",
-          image: {
+          type: mediaType,
+          [mediaType]: {
             link: absoluteMediaUrl(
               config.header_media_url,
               appUrl,

@@ -134,6 +134,7 @@ export async function buildCommunicationPreview({
         : maskedPhone(registration.phone),
     },
     body: renderConfiguredPreview({ config, event, registration }),
+    headerKind: config.header_kind,
     headerMediaUrl: config.header_media_url,
     buttonLabel:
       config.button_config.mode === "none"

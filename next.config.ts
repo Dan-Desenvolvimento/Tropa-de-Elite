@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
               isDevelopment
                 ? "connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https://*.supabase.co wss://*.supabase.co https://www.facebook.com https://connect.facebook.net"
                 : "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.facebook.com https://connect.facebook.net",
-              "media-src 'self' blob:",
+              "media-src 'self' blob: https://*.supabase.co",
               ...(isDevelopment ? [] : ["upgrade-insecure-requests"]),
             ].join("; "),
           },

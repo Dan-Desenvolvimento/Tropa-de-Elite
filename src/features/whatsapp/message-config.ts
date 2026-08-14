@@ -91,18 +91,18 @@ export const whatsappMessageConfigSchema = z
     templateName: z.string().trim().regex(/^[a-z0-9_]{1,512}$/, "Use exatamente o nome técnico aprovado na Meta."),
     templateLanguage: z.string().trim().regex(/^[a-z]{2,3}(?:_[A-Z]{2})?$/, "Use um idioma como pt_BR."),
     previewBody: z.string().trim().min(1, "Cole o corpo do modelo para gerar a prévia.").max(4096),
-    headerKind: z.enum(["none", "image"]),
+    headerKind: z.enum(["none", "image", "video"]),
     headerMediaUrl: z.string().trim().nullable().default(null),
     bodyVariables: z.array(whatsappBodyVariableSchema).max(20),
     buttonConfig: whatsappButtonConfigSchema,
     active: z.boolean().default(true),
   })
   .superRefine((message, context) => {
-    if (message.headerKind === "image" && !isSafeMediaUrl(message.headerMediaUrl)) {
+    if (message.headerKind !== "none" && !isSafeMediaUrl(message.headerMediaUrl)) {
       context.addIssue({
         code: "custom",
         path: ["headerMediaUrl"],
-        message: "Envie uma imagem ou informe uma URL HTTPS válida.",
+        message: "Envie a mídia do cabeçalho ou informe uma URL HTTPS válida.",
       });
     }
 
@@ -163,7 +163,7 @@ export type WhatsAppMessageConfigRow = {
   template_name: string;
   template_language: string;
   preview_body: string;
-  header_kind: "none" | "image";
+  header_kind: "none" | "image" | "video";
   header_media_url: string | null;
   body_variables: WhatsAppBodyVariable[];
   button_config: WhatsAppButtonConfig;
